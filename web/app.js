@@ -7,6 +7,7 @@
   const E = window.LEIYIN_ENGINE;
   let OPTS = null, LIBS = null, SELECTED_CULTURES = [], SELECTED_LENGTH = 'l';
   let LAST_RESULT = null;
+  let SELECTED_TOPIC = null, CURRENT_TOPICS = [], PHASE = 'idle';
 
   function optionsHTML(items, placeholder) {
     return (placeholder ? `<option value="">${placeholder}</option>` : '') +
@@ -154,26 +155,32 @@
     };
   }
 
-  async function doGenerate() {
-    const btn = $('generate-btn');
+  async function doGenerate(mode, selectedTopic) {
+    mode = mode || 'topics';
+    const btn = mode === 'topics' ? $('generate-btn') : $('write-article-btn');
     btn.disabled = true;
     $('error-box').classList.add('hidden');
     $('empty-state').classList.add('hidden');
     $('result').classList.add('hidden');
     $('loading').classList.remove('hidden');
-    $('loading-text').textContent = '正在调取知识库，静心酝酿…';
+    $('loading-text').textContent = mode === 'topics' ? '正在酝酿 5 个选题…' : '正在为选定选题写完整文章…';
 
     const ticker = setInterval(() => {
-      const msgs = ['正在调取知识库，静心酝酿…', '经络与心性正在融合…', '把道理化成生活的话…', '即将落笔，请稍候…'];
+      const msgs = mode === 'topics'
+        ? ['正在调取知识库…', '寻找不同切入角度…', '让 5 个选题各有侧重…', '即将落笔，请稍候…']
+        : ['正在调取知识库…', '经络与心性正在融合…', '把道理化成生活的话…', '即将落笔，请稍候…'];
       const cur = $('loading-text').textContent;
       const i = msgs.indexOf(cur);
       $('loading-text').textContent = msgs[(i + 1) % msgs.length];
     }, 3500);
 
     try {
-      const res = await E.generate(collectPayload());
+      const payload = collectPayload();
+      payload.mode = mode;
+      if (selectedTopic) payload.selectedTopic = selectedTopic;
+      const res = await E.generate(payload);
       LAST_RESULT = res;
-      renderResult(res);
+      renderResult(res, mode);
     } catch (e) {
       if (e.code === 'ACCESS_CODE_REQUIRED') { showAccessGate(); clearInterval(ticker); $('loading').classList.add('hidden'); btn.disabled = false; return; }
       const box = $('error-box');
@@ -189,6 +196,7 @@
       clearInterval(ticker);
       $('loading').classList.add('hidden');
       btn.disabled = false;
+      if (mode === 'article' && SELECTED_TOPIC) $('write-article-btn').disabled = false;
     }
   }
 
@@ -218,35 +226,86 @@
     return { topics, draft };
   }
 
-  function renderResult(res) {
-    const { topics, draft } = parseResult(res.content);
-    $('topics').innerHTML = topics.length
-      ? topics.map((t, i) => {
-          const mm = t.match(/^\d+[.、)]\s*(.*?)(?:\s*[—–-]{1,2}\s*(.*))?$/);
-          return `<div class="topic-card"><div class="topic-num">${['一','二','三','四','五','六'][i] || (i+1)}</div>
-            <div class="topic-body"><strong>${escapeHTML(mm ? mm[1] : t)}</strong>${mm && mm[2] ? `<span>${escapeHTML(mm[2])}</span>` : ''}</div></div>`;
+  function parseTopics(raw) {
+    const text = String(raw || '').trim();
+    const m = text.match(/(?:^|\n)\s*#{0,3}\s*选题[^\n]*\n([\s\S]*)/);
+    const body = m ? m[1] : text;
+    return body.split('\n')
+      .map((l) => l.trim().replace(/^[-*]\s*/, ''))
+      .filter((l) => /^\d+[.、)]/.test(l))
+      .map((l) => l.replace(/^\d+[.、)]\s*/, '').trim())
+      .filter(Boolean)
+      .slice(0, 5);
+  }
+
+  function renderTopicCards() {
+    $('topics').innerHTML = CURRENT_TOPICS.length
+      ? CURRENT_TOPICS.map((t, i) => {
+          const mm = t.match(/^(.*?)(?:\s*[—–-]{1,2}\s*(.*))?$/);
+          return `<div class="topic-card${SELECTED_TOPIC === t ? ' selected' : ''}" data-topic="${escapeHTML(t)}">
+            <div class="topic-num">${['一','二','三','四','五'][i] || (i + 1)}</div>
+            <div class="topic-body"><strong>${escapeHTML(mm ? mm[1] : t)}</strong>${mm && mm[2] ? `<span>${escapeHTML(mm[2])}</span>` : ''}</div>
+            <div class="topic-check">✓</div>
+          </div>`;
         }).join('')
-      : `<div class="topic-card"><div class="topic-body"><span>本次未解析出独立选题，完整成品见下方。</span></div></div>`;
-    $('topics-count').textContent = topics.length ? `${topics.length} 个` : '';
-    $('draft').innerHTML = formatDraft(escapeHTML(draft));
-    $('draft-words').textContent = `${draft.replace(/\s/g, '').length} 字`;
+      : '<div class="topic-card"><div class="topic-body"><span>本次未解析出选题，请点「换一组选题」重试。</span></div></div>';
+    $('topics').querySelectorAll('.topic-card[data-topic]').forEach((el) => {
+      el.addEventListener('click', () => {
+        SELECTED_TOPIC = el.dataset.topic;
+        renderTopicCards();
+        const btn = $('write-article-btn');
+        btn.disabled = false;
+        const short = SELECTED_TOPIC.split(/[—–-]/)[0].trim().slice(0, 16);
+        btn.textContent = '✎ 生成《' + short + '》完整文章';
+      });
+    });
+  }
 
-    const ct = OPTS.CONTENT_TYPES.find((x) => x.key === collectPayload().contentType);
-    $('ctype-label').textContent = ct ? ct.label : '';
+  function resetFlow() {
+    PHASE = 'idle'; SELECTED_TOPIC = null; CURRENT_TOPICS = []; LAST_RESULT = null;
+    $('result').classList.add('hidden');
+    $('empty-state').classList.remove('hidden');
+    $('error-box').classList.add('hidden');
+    $('topics').innerHTML = '';
+    $('draft').innerHTML = '';
+  }
 
+  function renderResult(res, mode) {
+    const raw = String(res.content || '').trim();
     const meta = [];
     if (res.engine) meta.push(`引擎 · ${res.engine}`);
     if (res.model) meta.push(`模型 · ${res.model}`);
     if (res.fallbackFrom) meta.push(`已从 ${[].concat(res.fallbackFrom).join(' → ')} 回退`);
     if (res.tokens) meta.push(`${res.tokens} tokens`);
     if (res.ms) meta.push(`${(res.ms / 1000).toFixed(1)}s`);
-    if (res.retrieved && res.retrieved.length) {
-      meta.push(`知识片段 · ${res.retrieved.length} 条`);
-    }
+    if (res.retrieved && res.retrieved.length) meta.push(`知识片段 · ${res.retrieved.length} 条`);
     $('result-meta').innerHTML = meta.map((x) => `<span class="meta-tag">${escapeHTML(x)}</span>`).join('');
+    $('copy-all').classList.add('hidden');
+    $('download-btn').classList.add('hidden');
 
-    $('copy-all').classList.remove('hidden');
-    $('download-btn').classList.remove('hidden');
+    if (mode === 'topics') {
+      PHASE = 'topics';
+      SELECTED_TOPIC = null;
+      CURRENT_TOPICS = parseTopics(raw);
+      renderTopicCards();
+      $('topics-count').textContent = CURRENT_TOPICS.length ? `${CURRENT_TOPICS.length} 个` : '';
+      $('topic-actions').classList.remove('hidden');
+      $('write-article-btn').disabled = true;
+      $('write-article-btn').textContent = '✎ 请先点击选中一个选题';
+      $('draft').innerHTML = '';
+      $('draft-words').textContent = '';
+      $('ctype-label').textContent = '';
+      $('draft-placeholder').classList.remove('hidden');
+    } else {
+      PHASE = 'article';
+      $('draft').innerHTML = formatDraft(escapeHTML(raw));
+      $('draft-words').textContent = `${raw.replace(/\s/g, '').length} 字`;
+      $('draft-placeholder').classList.add('hidden');
+      const ct = OPTS.CONTENT_TYPES.find((x) => x.key === collectPayload().contentType);
+      $('ctype-label').textContent = ct ? ct.label : '';
+      $('copy-all').classList.remove('hidden');
+      $('download-btn').classList.remove('hidden');
+    }
     $('result').classList.remove('hidden');
     $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -286,10 +345,14 @@
   }
 
   function bindEvents() {
-    $('generate-btn').addEventListener('click', doGenerate);
+    $('generate-btn').addEventListener('click', () => { resetFlow(); doGenerate('topics'); });
+    $('write-article-btn').addEventListener('click', () => {
+      if (!SELECTED_TOPIC) return;
+      doGenerate('article', SELECTED_TOPIC);
+    });
+    $('regen-topics').addEventListener('click', () => { resetFlow(); doGenerate('topics'); });
     $('copy-draft').addEventListener('click', () => {
-      const parsed = parseResult(LAST_RESULT.content);
-      copyText(parsed.draft);
+      copyText(LAST_RESULT.content);
       $('copy-draft').textContent = '✓ 已复制';
       setTimeout(() => ($('copy-draft').textContent = '⧉ 复制成品'), 1500);
     });
@@ -319,6 +382,15 @@
       const v = $('zhipu-key').value.trim();
       if (v) localStorage.setItem('leiyin_zhipu_key', v);
     });
+
+    // 任何创作参数变化都重置两步流程
+    const panel = document.querySelector('.control-panel');
+    if (panel) {
+      panel.addEventListener('change', resetFlow);
+      panel.addEventListener('input', resetFlow);
+    }
+    $('cultures').addEventListener('click', resetFlow);
+    $('lengths').addEventListener('click', resetFlow);
   }
 
   async function boot() {

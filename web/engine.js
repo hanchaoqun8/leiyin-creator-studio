@@ -159,7 +159,7 @@
     const OPTS = window.LEIYIN_OPTIONS, KB = window.LEIYIN_KB, P = window.LEIYIN_PROMPT;
     const {
       topic, topicCustom, cultures, cultureCustom, contentType, style, styleCustom,
-      audience, audienceCustom, length, lengthCustom, customNotes, engine, apiKey,
+      audience, audienceCustom, length, lengthCustom, customNotes, engine, apiKey, mode, selectedTopic,
     } = payload;
     const lengthObj = OPTS.LENGTHS.find((l) => l.key === length);
     const lengthText = length === 'custom' && lengthCustom ? `${lengthCustom}（自定义字数）`
@@ -169,19 +169,21 @@
       cultures: cultures || [], cultureCustom, contentType,
       style: style || OPTS.STYLES[0], styleCustom,
       audience: audience || OPTS.AUDIENCES[2], audienceCustom, lengthText, customNotes,
+      mode: mode, selectedTopic: selectedTopic,
     };
     const messages = [
       { role: 'system', content: P.buildSystemPrompt(ctx) },
       { role: 'user', content: P.buildUserPrompt(ctx) },
     ];
     const t0 = Date.now();
+    const budget = mode === 'topics' ? 900 : (length === 'xl' ? 2600 : 2000);
     const selected = engine || (byokOnly ? 'modelscope' : 'cloud');
     let out;
     if (selected === 'cloud') {
       if (byokOnly) throw new Error('当前为免密钥未开启模式，请改用魔搭或智谱引擎并填写密钥');
-      out = await callCloud(messages, 0.85, length === 'xl' ? 2600 : 2000);
+      out = await callCloud(messages, 0.85, budget);
     } else {
-      out = await callBYOK(selected, messages, apiKey, 0.85, length === 'xl' ? 2600 : 2000);
+      out = await callBYOK(selected, messages, apiKey, 0.85, budget);
     }
     return {
       ok: true, content: out.content, engine: out.provider, model: out.model,

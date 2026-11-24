@@ -156,3 +156,16 @@ body{
   .control-panel{position:static;max-height:none}
   .output-panel{min-height:400px}
 }
+
+
+/* ---------- 两步生成：选题 / 成文 ---------- */
+.topic-card{cursor:pointer;user-select:none;position:relative;padding-right:44px}
+.topic-card:hover{border-color:var(--accent2);box-shadow:0 2px 12px rgba(70,55,35,.07)}
+.topic-card.selected{border-color:var(--accent);background:linear-gradient(135deg,#fff,#fdf5ef);box-shadow:0 0 0 2px var(--accent-soft)}
+.topic-check{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:22px;height:22px;border-radius:50%;border:1px solid var(--line2);color:transparent;font-size:13px;display:flex;align-items:center;justify-content:center;transition:.2s}
+.topic-card.selected .topic-check{background:var(--accent);border-color:var(--accent);color:#fff}
+.topic-actions{display:flex;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap}
+.mini-btn.primary{background:var(--accent);color:#fff;border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer;border:none;transition:.2s}
+.mini-btn.primary:hover:not(:disabled){background:#8c4b30}
+.mini-btn.primary:disabled{background:var(--line2);color:#fff;cursor:not-allowed}
+.draft-placeholder{padding:32px 16px;text-align:center;color:var(--ink3);font-size:13px;background:var(--bg);border:1px dashed var(--line2);border-radius:10px}

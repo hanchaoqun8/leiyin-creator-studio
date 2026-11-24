@@ -115,7 +115,7 @@ const server = http.createServer(async (req, res) => {
       const {
         topic, topicCustom, cultures, cultureCustom, contentType,
         style, styleCustom, audience, audienceCustom, length, lengthCustom,
-        customNotes, engine,
+        customNotes, engine, mode, selectedTopic,
       } = body;
 
       if (!topic && !topicCustom) return json(res, 400, { ok: false, error: '请填写创作主题' });
@@ -131,7 +131,7 @@ const server = http.createServer(async (req, res) => {
       const ctx = {
         topic: topicText, topicCustom: '', cultures: cultures || [], cultureCustom,
         contentType, style: style || OPTS.STYLES[0], styleCustom,
-        audience: audience || OPTS.AUDIENCES[2], audienceCustom, lengthText, customNotes: safeNotes,
+        audience: audience || OPTS.AUDIENCES[2], audienceCustom, lengthText, customNotes: safeNotes, mode, selectedTopic,
       };
 
       const messages = [
@@ -144,7 +144,7 @@ const server = http.createServer(async (req, res) => {
         const out = await generate(messages, {
           engine: engine || 'auto',
           temperature: 0.85,
-          maxTokens: length === 'xl' ? 2600 : (length === 'm' ? 1400 : 2200),
+          maxTokens: mode === 'topics' ? 900 : (length === 'xl' ? 2600 : (length === 'm' ? 1400 : 2200)),
         });
         return json(res, 200, {
           ok: true, content: out.content,

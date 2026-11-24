@@ -34,6 +34,9 @@ public class MainActivity extends Activity {
     private static final String MS_URL = "https://api-inference.modelscope.cn/v1/chat/completions";
     private static final String ZP_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
 
+    // 智谱实测：flash 系列为非推理模型，正文稳定；4.7/4.5-air 的 reasoning 会吃光预算
+    private static final String[] ZP_MODELS = {"glm-4-flash", "glm-4-flashx"};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -108,15 +111,19 @@ public class MainActivity extends Activity {
             }
 
             if ("auto".equals(engine) || "zhipu".equals(engine)) {
-                String[] models = {"glm-4-flash", "glm-4.5"};
                 String last = "";
-                for (String m : models) {
+                for (String m : ZP_MODELS) {
                     tried.put(m);
-                    try {
-                        String content = call(ZP_URL, ZP_TOKEN, m, messages, maxTokens);
-                        return ok(content, m, "zhipu", tried, t0);
-                    } catch (Exception e) {
-                        last = e.getMessage() == null ? "未知错误" : e.getMessage();
+                    for (int mult = 1; mult <= 2; mult++) {
+                        try {
+                            String content = call(ZP_URL, ZP_TOKEN, m, messages, maxTokens * mult);
+                            return ok(content, m, "zhipu", tried, t0);
+                        } catch (Exception e) {
+                            last = e.getMessage() == null ? "未知错误" : e.getMessage();
+                            // 推理吃光预算 → 同模型加倍重试一次；其他错误换下一个模型
+                            if (last.contains("推理") && mult == 1) continue;
+                            break;
+                        }
                     }
                 }
                 return fail("智谱生成失败：" + last, tried);
@@ -196,8 +203,11 @@ public class MainActivity extends Activity {
         }
         JSONObject msg = choices.getJSONObject(0).optJSONObject("message");
         String content = msg == null ? "" : msg.optString("content", "");
+        String reasoning = msg == null ? "" : msg.optString("reasoning_content", "");
         if (content == null || content.trim().isEmpty()) {
-            throw new Exception("返回为空（可能只有思考过程）");
+            throw new Exception(reasoning.length() > 0
+                    ? "正文未生成：token 预算被推理占用"
+                    : "返回为空");
         }
         return content.trim();
     }

@@ -31,9 +31,15 @@ const ZHIPU = {
   baseUrl: process.env.ZHIPU_BASE_URL || 'https://open.bigmodel.cn/api/paas/v4',
   // 环境变量或前端传来的 key（BYOK）
   key: (SECRETS.ZHIPU_API_KEY || '').trim() || null,
-  // ★ 实测：glm-4.7 文风好但是推理模型，需要更大 max_tokens 才出正文；
-  //   glm-4-flash 响应稳、快，作为默认。
+  // ★ 2026-11-24 实测诊断：
+  //   glm-4-flash / glm-4-flashx 是非推理模型，正文稳定输出 → 主用；
+  //   glm-4.5-air / glm-4.7 是推理模型，max_tokens 常被 reasoning_content 吃光，正文为空；
+  //   glm-4.5-flash、glm-4.6v-flash 当前返回 429「访问量过大」。
+  //   故 chain 只用稳定模型；推理模型仅在显式指定时启用并自动加倍 token 预算。
   model: process.env.ZHIPU_MODEL || 'glm-4-flash',
+  chain: (process.env.ZHIPU_MODEL_CHAIN
+    ? process.env.ZHIPU_MODEL_CHAIN.split(',').map((s) => s.trim()).filter(Boolean)
+    : ['glm-4-flash', 'glm-4-flashx']),
 };
 
 async function callOpenAICompatible(baseUrl, token, model, messages, { temperature = 0.85, maxTokens = 1800 } = {}) {
@@ -73,9 +79,18 @@ async function callOpenAICompatible(baseUrl, token, model, messages, { temperatu
     if (res.status === 404 || (res.status === 400 && /model/i.test(msg))) e.modelUnavailable = true;
     throw e;
   }
-  const content = json?.choices?.[0]?.message?.content;
-  if (!content) { const e = new Error('接口返回内容为空'); e.code = 'EMPTY_CONTENT'; throw e; }
-  return { content: content.trim(), model, usage: json.usage };
+  const message = json?.choices?.[0]?.message || {};
+  const content = (message.content || '').trim();
+  const reasoning = (message.reasoning_content || '').trim();
+  if (!content) {
+    const e = new Error(reasoning
+      ? '模型思考过长，正文未生成（token 预算被推理占用）'
+      : '接口返回内容为空');
+    e.code = reasoning ? 'REASONING_BUDGET' : 'EMPTY_CONTENT';
+    e.status = res.status;
+    throw e;
+  }
+  return { content, reasoning, model, usage: json.usage };
 }
 
 async function callModelScope(messages, opts) {
@@ -98,11 +113,36 @@ async function callModelScope(messages, opts) {
 }
 
 async function callZhipu(messages, opts, apiKey) {
-  const key = apiKey || ZHIPU.key;
+  const key = (apiKey || ZHIPU.key || '').trim();
   if (!key) { const e = new Error('未配置智谱 API Key（需在设置里填写或设 ZHIPU_API_KEY）'); e.code = 'NO_ZHIPU_KEY'; e.fatal = true; throw e; }
-  const out = await callOpenAICompatible(ZHIPU.baseUrl, key, ZHIPU.model, messages, opts);
-  out.provider = 'zhipu';
-  return out;
+
+  // 显式指定的模型也纳入链首，保证环境变量可覆盖
+  const models = Array.from(new Set([ZHIPU.model].concat(ZHIPU.chain)));
+  const attempts = [];
+  for (const model of models) {
+    for (const mult of [1, 2]) {
+      const budget = Math.max(Number(opts.maxTokens) || 1800, 700) * mult;
+      try {
+        const out = await callOpenAICompatible(ZHIPU.baseUrl, key, model, messages,
+          Object.assign({}, opts, { maxTokens: budget }));
+        out.provider = 'zhipu';
+        out.attempts = attempts;
+        return out;
+      } catch (e) {
+        attempts.push({ model, error: e.message, status: e.status, budget });
+        // 账号级错误不回退
+        if (e.status === 401 || e.status === 403) { e.fatal = true; e.attempts = attempts; throw e; }
+        // 推理吃光预算 → 同一模型加倍重试一次
+        if (e.code === 'REASONING_BUDGET' && mult === 1) continue;
+        // 429/404/400/网络错误 → 换下一个模型
+        break;
+      }
+    }
+  }
+  const e = new Error('智谱全部模型失败：' + attempts.map((a) => a.model + '(' + (a.status || '-') + ')').join('、'));
+  e.attempts = attempts;
+  e.code = 'ZHIPU_ALL_FAILED';
+  throw e;
 }
 
 /**
@@ -131,7 +171,7 @@ async function generate(messages, { engine = 'auto', apiKey, temperature, maxTok
 function status() {
   return {
     modelscope: { configured: !!MODELSCOPE.token, chain: MODELSCOPE.chain, primary: MODELSCOPE.chain[0] },
-    zhipu: { configured: !!ZHIPU.key, model: ZHIPU.model, note: '可在设置中填写 API Key（BYOK）' },
+    zhipu: { configured: !!ZHIPU.key, model: ZHIPU.model, chain: ZHIPU.chain, note: '非推理模型优先，避免正文被思考过程吃光' },
   };
 }
 

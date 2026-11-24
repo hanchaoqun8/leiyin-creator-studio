@@ -48,8 +48,9 @@
   function buildSystemPrompt(ctx) {
     const {
       style, styleCustom, audience, audienceCustom,
-      contentType, lengthText, cultures, topic, customNotes,
+      contentType, lengthText, cultures, topic, customNotes, mode,
     } = ctx;
+    const step = mode === 'topics' || mode === 'article' ? mode : 'both';
 
     const styleLine = styleCustom && styleCustom.trim() ? styleCustom.trim() : style;
     const audLine = audienceCustom && audienceCustom.trim() ? audienceCustom.trim() : audience;
@@ -88,10 +89,21 @@
       '',
       customNotes && customNotes.trim() ? `【用户补充要求】\n${customNotes.trim()}` : '',
       '',
-      '【输出格式 · 严格遵守】',
-      '先输出「## 选题」，给出 4-5 个不同角度的原创标题选题，每行一个，格式：`1. 标题 —— 一句话说明切入点`。',
-      '然后输出「## 成品」，完整写出选定主题的成品文案（就是上面内容类型要求的格式）。',
-      '成品只输出正文，不要在正文里再写"以下是文案"之类的说明。',
+      step === 'topics' ? [
+        '【本步任务 · 只做选题】',
+        '只输出 5 个不同角度的原创选题，每行一个，格式严格为：`1. 标题 —— 一句话说明切入点`。',
+        '只输出编号列表本身：不要"## 选题"标题、不要成品正文、不要任何解释或开场白。',
+        '5 个角度要真正不同（如：场景痛点 / 一个具体动作 / 情绪共鸣 / 反常识 / 人群专属）。',
+      ].join('\n') : step === 'article' ? [
+        '【本步任务 · 只写成文】',
+        '只为下面指定的这一个选题写一篇完整成品，严格按上面「内容类型」的格式要求写。',
+        '直接输出正文：不要"## 成品"标题、不要重复选题列表、不要写"以下是文案"之类的说明。',
+      ].join('\n') : [
+        '【输出格式 · 严格遵守】',
+        '先输出「## 选题」，给出 5 个不同角度的原创标题选题，每行一个，格式：`1. 标题 —— 一句话说明切入点`。',
+        '然后输出「## 成品」，完整写出选定主题的成品文案（就是上面内容类型要求的格式）。',
+        '成品只输出正文，不要在正文里再写"以下是文案"之类的说明。',
+      ].join('\n'),
     ].filter(Boolean).join('\n');
   }
 
@@ -100,7 +112,14 @@
     const bits = [`创作主题：${ctx.topic}`];
     if (ctx.topicCustom && ctx.topicCustom.trim()) bits.push(`补充/自定义话题：${ctx.topicCustom.trim()}`);
     if (ctx.cultureCustom && ctx.cultureCustom.trim()) bits.push(`自定义文化维度：${ctx.cultureCustom.trim()}`);
-    bits.push('请按系统提示的格式，给出 4-5 个选题和一篇完整成品。');
+    if (ctx.mode === 'topics') {
+      bits.push('请严格按本步任务，只输出 5 个选题，每行一条，不要写成品。');
+    } else if (ctx.mode === 'article') {
+      bits.push('已选定的选题：' + (ctx.selectedTopic || ctx.topic));
+      bits.push('请严格按本步任务，只为这一个选题写一篇完整成品，不要输出选题列表。');
+    } else {
+      bits.push('请按系统提示的格式，给出 5 个选题和一篇完整成品。');
+    }
     return bits.join('\n');
   }
 

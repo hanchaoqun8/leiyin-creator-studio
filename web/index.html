@@ -103,7 +103,7 @@
       </section>
 
       <button id="generate-btn" class="generate-btn">
-        <span class="btn-icon">✦</span> 开始创作 <span class="btn-sub">4-5 选题 + 完整成品</span>
+        <span class="btn-icon">✦</span> 生成 5 个选题 <span class="btn-sub">先选题，再写文章</span>
       </button>
       <p class="disclaimer">内容仅供养生与文化参考 · 不做医疗诊断 · 不承诺疗效</p>
     </aside>
@@ -121,7 +121,7 @@
       <div id="empty-state" class="empty-state">
         <div class="empty-seal">禅</div>
         <h3>静待一念</h3>
-        <p>在左侧选好主题与参数，点击「开始创作」<br>四大知识库将为你柔和融入每一个字</p>
+        <p>点击「生成 5 个选题」<br>选中喜欢的选题后，再写完整文章</p>
         <div class="empty-kb">
           <span>《黄帝内经》经络</span><span>素手归原古法</span><span>道德经 · 周易 · 禅修</span>
         </div>
@@ -137,6 +137,10 @@
         <section class="result-block">
           <h3 class="result-title"><span class="title-mark">选</span> 选题灵感 <small id="topics-count"></small></h3>
           <div id="topics" class="topics"></div>
+          <div id="topic-actions" class="topic-actions hidden">
+            <button id="write-article-btn" class="mini-btn primary" disabled>✎ 请先点击选中一个选题</button>
+            <button id="regen-topics" class="text-btn">↻ 换一组选题</button>
+          </div>
         </section>
         <section class="result-block">
           <h3 class="result-title"><span class="title-mark">文</span> 完整成品 <small id="ctype-label"></small></h3>
@@ -144,6 +148,7 @@
             <button id="copy-draft" class="text-btn">⧉ 复制成品</button>
             <span id="draft-words" class="word-count"></span>
           </div>
+          <div id="draft-placeholder" class="draft-placeholder">↑ 请先在上方点击选中一个选题，再生成完整文章</div>
           <div id="draft" class="draft"></div>
         </section>
       </div>
