@@ -298,7 +298,7 @@
       const blob = new Blob([LAST_RESULT.content], { type: 'text/markdown;charset=utf-8' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `雷音禅拍_${new Date().toISOString().slice(0, 10)}.md`;
+      a.download = `素手归原_${new Date().toISOString().slice(0, 10)}.md`;
       a.click(); URL.revokeObjectURL(a.href);
     });
 

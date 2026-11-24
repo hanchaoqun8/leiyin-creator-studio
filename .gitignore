@@ -4,3 +4,6 @@ secrets.local.js
 .env.*
 *.log
 .DS_Store
+android/.build/
+android/*.apk
+android/*.keystore

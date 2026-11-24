@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * 雷音禅拍创作平台 · 独立云端版（任何浏览器/小程序 webview/APP webview 可打开）
+ * 素手归原创作平台 · 独立云端版（任何浏览器/小程序 webview/APP webview 可打开）
  *  · 令牌只存在服务端 secrets.js，绝不下发浏览器
  *  · 访问口令门禁，防止令牌被当公共代理滥用（口令存浏览器 localStorage，只输一次）
  *  · 监听 PORT 环境变量，绑定 0.0.0.0 —— 符合发布沙箱要求
@@ -172,7 +172,7 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, '0.0.0.0', () => {
   const s = status();
-  console.log('\n  雷音禅拍创作平台 · 独立云端版');
+  console.log('\n  素手归原创作平台 · 独立云端版');
   console.log('  ──────────────────────────────────────────');
   console.log(`  监听  0.0.0.0:${PORT}`);
   console.log(`  魔搭  ${s.modelscope.configured ? '✓ 已配置 · ' + s.modelscope.primary : '✗ 未配置'}`);

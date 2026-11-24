@@ -1,8 +1,8 @@
 {
-  "name": "leiyin-creator-standalone",
+  "name": "sushou-guiyuan-studio",
   "version": "1.0.0",
   "private": true,
-  "description": "雷音禅拍 · 身心自愈全能创作平台（独立云端版）",
+  "description": "素手归原 · 身心自愈全能创作平台（独立云端版）",
   "scripts": {
     "start": "node server.js"
   }

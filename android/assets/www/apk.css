@@ -1,0 +1,2 @@
+/* APK 专属微调：令牌已内置，无需在界面填密钥 */
+#zhipu-key-row { display: none !important; }
