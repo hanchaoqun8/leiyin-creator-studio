@@ -23,6 +23,7 @@ const MIME = {
   '.js': 'application/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8',
   '.svg': 'image/svg+xml', '.png': 'image/png', '.jpg': 'image/jpeg', '.ico': 'image/x-icon',
   '.woff2': 'font/woff2',
+  '.apk': 'application/vnd.android.package-archive',
 };
 
 function json(res, code, obj) {
@@ -69,8 +70,10 @@ function serveStatic(res, urlPath) {
   if (!full.startsWith(path.resolve(WEB_DIR))) return false;
   if (!fs.existsSync(full) || fs.statSync(full).isDirectory()) return false;
   const body = fs.readFileSync(full);
+  const isApk = path.extname(full).toLowerCase() === '.apk';
   res.writeHead(200, {
     'Content-Type': MIME[path.extname(full).toLowerCase()] || 'application/octet-stream',
+    ...(isApk ? { 'Content-Disposition': 'attachment; filename="sushou-guiyuan.apk"' } : {}),
     'Cache-Control': 'no-cache',
   });
   res.end(body);

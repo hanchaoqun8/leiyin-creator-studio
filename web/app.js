@@ -454,6 +454,8 @@
   function bindEvents() {
     if (BOUND) return;
     BOUND = true;
+    const apkBtn = $('apk-btn');
+    if (apkBtn && location.search) apkBtn.href += location.search;
     $('generate-btn').addEventListener('click', doGenerateTopics);
     $('write-article-btn').addEventListener('click', generateArticles);
     $('regen-topics').addEventListener('click', doGenerateTopics);
