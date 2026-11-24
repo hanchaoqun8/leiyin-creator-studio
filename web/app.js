@@ -1,13 +1,14 @@
 /* ============================================================
- * 工作台前端逻辑
+ * 工作台前端逻辑 · 五组灵感多选 / 逐条生成
  * ============================================================ */
 (function () {
   'use strict';
   const $ = (id) => document.getElementById(id);
   const E = window.LEIYIN_ENGINE;
   let OPTS = null, LIBS = null, SELECTED_CULTURES = [], SELECTED_LENGTH = 'l';
-  let LAST_RESULT = null;
-  let SELECTED_TOPIC = null, CURRENT_TOPICS = [], PHASE = 'idle';
+  let LAST_RESULT = null, ARTICLES = [];
+  let SELECTED_TOPICS = [], CURRENT_TOPICS = [], PHASE = 'idle';
+  let GENERATING = false, STOP_REQUESTED = false, BOUND = false;
 
   function optionsHTML(items, placeholder) {
     return (placeholder ? `<option value="">${placeholder}</option>` : '') +
@@ -27,7 +28,6 @@
     $('style').innerHTML = optionsHTML(OPTS.STYLES) + '<option value="__custom__">✎ 自定义风格…</option>';
     $('audience').innerHTML = optionsHTML(OPTS.AUDIENCES) + '<option value="__custom__">✎ 自定义受众…</option>';
 
-    // 文化 chips
     $('cultures').innerHTML = OPTS.CULTURES.map((c) =>
       `<div class="chip" data-key="${c.key}" title="${c.hint}"><span class="cb"></span><span>${c.label}</span></div>`
     ).join('');
@@ -41,7 +41,6 @@
       });
     });
 
-    // 字数 seg
     $('lengths').innerHTML = OPTS.LENGTHS.map((l) =>
       `<div class="seg-btn${l.key === SELECTED_LENGTH ? ' active' : ''}" data-key="${l.key}">${l.label}</div>`
     ).join('') + '<div class="seg-btn" data-key="custom">✎ 自定义</div>';
@@ -53,7 +52,6 @@
       });
     });
 
-    // 默认勾选
     const d = OPTS.defaults;
     $('topic').value = d.topic;
     $('content-type').value = d.contentType;
@@ -65,7 +63,6 @@
     });
     updateKbStatus();
 
-    // 自定义输入显隐
     bindCustom('topic', 'topic-custom-row');
     bindCustom('style', 'style-custom-row');
     bindCustom('audience', 'audience-custom-row');
@@ -155,53 +152,12 @@
     };
   }
 
-  async function doGenerate(mode, selectedTopic) {
-    mode = mode || 'topics';
-    const btn = mode === 'topics' ? $('generate-btn') : $('write-article-btn');
-    btn.disabled = true;
-    $('error-box').classList.add('hidden');
-    $('empty-state').classList.add('hidden');
-    $('result').classList.add('hidden');
-    $('loading').classList.remove('hidden');
-    $('loading-text').textContent = mode === 'topics' ? '正在酝酿 5 个选题…' : '正在为选定选题写完整文章…';
-
-    const ticker = setInterval(() => {
-      const msgs = mode === 'topics'
-        ? ['正在调取知识库…', '寻找不同切入角度…', '让 5 个选题各有侧重…', '即将落笔，请稍候…']
-        : ['正在调取知识库…', '经络与心性正在融合…', '把道理化成生活的话…', '即将落笔，请稍候…'];
-      const cur = $('loading-text').textContent;
-      const i = msgs.indexOf(cur);
-      $('loading-text').textContent = msgs[(i + 1) % msgs.length];
-    }, 3500);
-
-    try {
-      const payload = collectPayload();
-      payload.mode = mode;
-      if (selectedTopic) payload.selectedTopic = selectedTopic;
-      const res = await E.generate(payload);
-      LAST_RESULT = res;
-      renderResult(res, mode);
-    } catch (e) {
-      if (e.code === 'ACCESS_CODE_REQUIRED') { showAccessGate(); clearInterval(ticker); $('loading').classList.add('hidden'); btn.disabled = false; return; }
-      const box = $('error-box');
-      let html = `<strong>生成失败</strong>：${escapeHTML(e.message || '未知错误')}`;
-      if (e.userAction) html += `<br><br>建议：${escapeHTML(e.userAction)}`;
-      if (e.attempts && e.attempts.length) {
-        html += '<br><br>尝试记录：' + e.attempts.map((a) => `${a.model} → ${a.error || a.status}`).join('；');
-      }
-      box.innerHTML = html;
-      box.classList.remove('hidden');
-      $('empty-state').classList.remove('hidden');
-    } finally {
-      clearInterval(ticker);
-      $('loading').classList.add('hidden');
-      btn.disabled = false;
-      if (mode === 'article' && SELECTED_TOPIC) $('write-article-btn').disabled = false;
-    }
-  }
-
   function escapeHTML(s) {
     return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+
+  function topicShort(t) {
+    return String(t || '').split(/[—–-]/)[0].trim().slice(0, 20) || '未命名选题';
   }
 
   function formatDraft(text) {
@@ -210,20 +166,6 @@
       .replace(/^## (.*)$/gm, '<h2>$1</h2>')
       .replace(/^# (.*)$/gm, '<h1>$1</h1>')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-  }
-
-  function parseResult(raw) {
-    let topics = [], draft = raw.trim();
-    const m = raw.match(/(?:^|\n)\s*#{0,3}\s*选题[^\n]*\n([\s\S]*?)(?:\n\s*#{0,3}\s*成品|$)/);
-    if (m) {
-      topics = m[1].split('\n').map((l) => l.trim()).filter((l) => /^\d+[.、)]/.test(l));
-      const d = raw.match(/(?:^|\n)\s*#{0,3}\s*成品[^\n]*\n([\s\S]*)$/);
-      if (d) draft = d[1].trim();
-    }
-    if (!topics.length) {
-      topics = raw.split('\n').map((l) => l.trim()).filter((l) => /^\d+[.、)]/.test(l)).slice(0, 5);
-    }
-    return { topics, draft };
   }
 
   function parseTopics(raw) {
@@ -238,76 +180,242 @@
       .slice(0, 5);
   }
 
-  function renderTopicCards() {
-    $('topics').innerHTML = CURRENT_TOPICS.length
-      ? CURRENT_TOPICS.map((t, i) => {
-          const mm = t.match(/^(.*?)(?:\s*[—–-]{1,2}\s*(.*))?$/);
-          return `<div class="topic-card${SELECTED_TOPIC === t ? ' selected' : ''}" data-topic="${escapeHTML(t)}">
-            <div class="topic-num">${['一','二','三','四','五'][i] || (i + 1)}</div>
-            <div class="topic-body"><strong>${escapeHTML(mm ? mm[1] : t)}</strong>${mm && mm[2] ? `<span>${escapeHTML(mm[2])}</span>` : ''}</div>
-            <div class="topic-check">✓</div>
-          </div>`;
-        }).join('')
-      : '<div class="topic-card"><div class="topic-body"><span>本次未解析出选题，请点「换一组选题」重试。</span></div></div>';
-    $('topics').querySelectorAll('.topic-card[data-topic]').forEach((el) => {
-      el.addEventListener('click', () => {
-        SELECTED_TOPIC = el.dataset.topic;
-        renderTopicCards();
-        const btn = $('write-article-btn');
-        btn.disabled = false;
-        const short = SELECTED_TOPIC.split(/[—–-]/)[0].trim().slice(0, 16);
-        btn.textContent = '✎ 生成《' + short + '》完整文章';
-      });
-    });
+  function startLoading(text, msgs) {
+    $('loading-text').textContent = text;
+    $('loading').classList.remove('hidden');
+    const ticker = setInterval(() => {
+      const cur = $('loading-text').textContent;
+      const i = msgs.indexOf(cur);
+      $('loading-text').textContent = msgs[(i + 1) % msgs.length];
+    }, 3500);
+    return ticker;
   }
 
-  function resetFlow() {
-    PHASE = 'idle'; SELECTED_TOPIC = null; CURRENT_TOPICS = []; LAST_RESULT = null;
-    $('result').classList.add('hidden');
-    $('empty-state').classList.remove('hidden');
+  function showError(e) {
+    const box = $('error-box');
+    let html = `<strong>生成失败</strong>：${escapeHTML(e.message || '未知错误')}`;
+    if (e.userAction) html += `<br><br>建议：${escapeHTML(e.userAction)}`;
+    if (e.attempts && e.attempts.length) {
+      html += '<br><br>尝试记录：' + e.attempts.map((a) => `${a.model} → ${a.error || a.status}`).join('；');
+    }
+    box.innerHTML = html;
+    box.classList.remove('hidden');
+  }
+
+  // ---------- 第一步：生成 5 组灵感 ----------
+  async function doGenerateTopics() {
+    if (GENERATING) return;
+    resetFlow();
+    const btn = $('generate-btn');
+    btn.disabled = true;
     $('error-box').classList.add('hidden');
-    $('topics').innerHTML = '';
-    $('draft').innerHTML = '';
+    $('empty-state').classList.add('hidden');
+    const ticker = startLoading('正在酝酿 5 组灵感…',
+      ['正在调取知识库…', '寻找不同切入角度…', '让 5 组灵感各有侧重…', '即将落笔，请稍候…']);
+    try {
+      const payload = collectPayload();
+      payload.mode = 'topics';
+      const res = await E.generate(payload);
+      LAST_RESULT = res;
+      renderTopics(res);
+    } catch (e) {
+      if (e.code === 'ACCESS_CODE_REQUIRED' && typeof showAccessGate === 'function') { showAccessGate(); return; }
+      showError(e);
+      $('empty-state').classList.remove('hidden');
+    } finally {
+      clearInterval(ticker);
+      $('loading').classList.add('hidden');
+      btn.disabled = false;
+    }
   }
 
-  function renderResult(res, mode) {
+  function renderTopics(res) {
     const raw = String(res.content || '').trim();
     const meta = [];
     if (res.engine) meta.push(`引擎 · ${res.engine}`);
     if (res.model) meta.push(`模型 · ${res.model}`);
     if (res.fallbackFrom) meta.push(`已从 ${[].concat(res.fallbackFrom).join(' → ')} 回退`);
-    if (res.tokens) meta.push(`${res.tokens} tokens`);
     if (res.ms) meta.push(`${(res.ms / 1000).toFixed(1)}s`);
-    if (res.retrieved && res.retrieved.length) meta.push(`知识片段 · ${res.retrieved.length} 条`);
     $('result-meta').innerHTML = meta.map((x) => `<span class="meta-tag">${escapeHTML(x)}</span>`).join('');
+
+    PHASE = 'topics';
+    SELECTED_TOPICS = [];
+    CURRENT_TOPICS = parseTopics(raw);
+    renderTopicCards();
+    $('topics-count').textContent = CURRENT_TOPICS.length ? `${CURRENT_TOPICS.length} 组 · 可多选` : '';
+    $('topic-actions').classList.remove('hidden');
+    $('draft-placeholder').classList.remove('hidden');
+    $('draft-placeholder').textContent = '↑ 勾选上方灵感（可多选），再点「逐条生成」；每写完一篇就显示一篇';
+    $('draft-list').innerHTML = '';
+    $('draft-words').textContent = '';
+    $('ctype-label').textContent = '';
     $('copy-all').classList.add('hidden');
     $('download-btn').classList.add('hidden');
-
-    if (mode === 'topics') {
-      PHASE = 'topics';
-      SELECTED_TOPIC = null;
-      CURRENT_TOPICS = parseTopics(raw);
-      renderTopicCards();
-      $('topics-count').textContent = CURRENT_TOPICS.length ? `${CURRENT_TOPICS.length} 个` : '';
-      $('topic-actions').classList.remove('hidden');
-      $('write-article-btn').disabled = true;
-      $('write-article-btn').textContent = '✎ 请先点击选中一个选题';
-      $('draft').innerHTML = '';
-      $('draft-words').textContent = '';
-      $('ctype-label').textContent = '';
-      $('draft-placeholder').classList.remove('hidden');
-    } else {
-      PHASE = 'article';
-      $('draft').innerHTML = formatDraft(escapeHTML(raw));
-      $('draft-words').textContent = `${raw.replace(/\s/g, '').length} 字`;
-      $('draft-placeholder').classList.add('hidden');
-      const ct = OPTS.CONTENT_TYPES.find((x) => x.key === collectPayload().contentType);
-      $('ctype-label').textContent = ct ? ct.label : '';
-      $('copy-all').classList.remove('hidden');
-      $('download-btn').classList.remove('hidden');
-    }
     $('result').classList.remove('hidden');
     $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderTopicCards() {
+    $('topics').innerHTML = CURRENT_TOPICS.length
+      ? CURRENT_TOPICS.map((t, i) => {
+          const mm = t.match(/^(.*?)(?:\s*[—–-]{1,2}\s*(.*))?$/);
+          const picked = SELECTED_TOPICS.indexOf(t) >= 0;
+          return `<div class="topic-card${picked ? ' selected' : ''}" data-topic="${escapeHTML(t)}">
+            <div class="topic-num">${['一','二','三','四','五'][i] || (i + 1)}</div>
+            <div class="topic-body"><strong>${escapeHTML(mm ? mm[1] : t)}</strong>${mm && mm[2] ? `<span>${escapeHTML(mm[2])}</span>` : ''}</div>
+            <div class="topic-check">✓</div>
+          </div>`;
+        }).join('')
+      : '<div class="topic-card"><div class="topic-body"><span>本次未解析出灵感，请点「换一组灵感」重试。</span></div></div>';
+    $('topics').querySelectorAll('.topic-card[data-topic]').forEach((el) => {
+      el.addEventListener('click', () => {
+        const t = el.dataset.topic;
+        const i = SELECTED_TOPICS.indexOf(t);
+        if (i >= 0) SELECTED_TOPICS.splice(i, 1);
+        else SELECTED_TOPICS.push(t);
+        renderTopicCards();
+        updateWriteButton();
+      });
+    });
+    updateWriteButton();
+  }
+
+  function updateWriteButton() {
+    const btn = $('write-article-btn');
+    if (!btn) return;
+    const n = SELECTED_TOPICS.length;
+    btn.disabled = n === 0 || GENERATING;
+    btn.textContent = n ? `✎ 逐条生成 ${n} 篇完整文章` : '✎ 请先勾选灵感（可多选）';
+    $('select-all').textContent = (CURRENT_TOPICS.length && n === CURRENT_TOPICS.length) ? '☐ 取消全选' : '☑ 全选';
+    $('clear-selection').disabled = n === 0;
+  }
+
+  // ---------- 第二步：逐条生成文章 ----------
+  function appendArticleCard(index, topic, total) {
+    const id = 'art-' + index;
+    const card = document.createElement('div');
+    card.className = 'article-card writing';
+    card.id = id;
+    card.innerHTML = `
+      <div class="article-head">
+        <span class="article-index">${String(index + 1).padStart(2, '0')}</span>
+        <strong class="article-title">${escapeHTML(topicShort(topic))}</strong>
+        <span class="article-status" id="${id}-status">生成中…</span>
+        <button class="text-btn" data-copy-article="${index}" title="复制本文">⧉ 复制本文</button>
+      </div>
+      <div class="article-body" id="${id}-body"><div class="article-wait">正在调取知识库，逐条落笔…</div></div>`;
+    $('draft-list').appendChild(card);
+    return card;
+  }
+
+  function fillArticle(index, content, res) {
+    const body = $('art-' + index + '-body');
+    const status = $('art-' + index + '-status');
+    const card = $('art-' + index);
+    if (!body) return;
+    const raw = String(content || '').trim();
+    body.innerHTML = formatDraft(escapeHTML(raw));
+    card.classList.remove('writing');
+    const bits = [`${raw.replace(/\s/g, '').length} 字`];
+    if (res && res.model) bits.push(res.model);
+    if (res && res.ms) bits.push(`${(res.ms / 1000).toFixed(1)}s`);
+    status.textContent = bits.join(' · ');
+  }
+
+  function failArticle(index, err) {
+    const body = $('art-' + index + '-body');
+    const status = $('art-' + index + '-status');
+    const card = $('art-' + index);
+    if (!body) return;
+    let msg = escapeHTML(err && err.message ? err.message : '未知错误');
+    if (err && err.userAction) msg += `<br>建议：${escapeHTML(err.userAction)}`;
+    body.innerHTML = `<div class="article-fail">本篇生成失败：${msg}<br><span>其他灵感会继续生成，不受影响。</span></div>`;
+    status.textContent = '失败';
+    card.classList.remove('writing');
+    card.classList.add('failed');
+  }
+
+  function updateArticleToolbar() {
+    const n = ARTICLES.length;
+    $('draft-words').textContent = n ? `共 ${n} 篇 · ${ARTICLES.reduce((s, a) => s + a.content.replace(/\s/g, '').length, 0)} 字` : '';
+    $('copy-all').classList.toggle('hidden', n === 0);
+    $('download-btn').classList.toggle('hidden', n === 0);
+    $('copy-draft').classList.toggle('hidden', n === 0);
+  }
+
+  function allArticlesText() {
+    return ARTICLES.map((a, i) => `# 第 ${i + 1} 篇：${a.topic}\n\n${a.content}`).join('\n\n---\n\n');
+  }
+
+  async function generateArticles() {
+    if (GENERATING || !SELECTED_TOPICS.length) return;
+    GENERATING = true;
+    STOP_REQUESTED = false;
+    const btn = $('write-article-btn');
+    btn.disabled = true;
+    $('error-box').classList.add('hidden');
+    $('result').classList.remove('hidden');
+    $('empty-state').classList.add('hidden');
+    $('draft-placeholder').classList.add('hidden');
+    $('stop-gen').classList.remove('hidden');
+
+    // 按灵感原始顺序逐条生成，不按点击顺序
+    const queue = CURRENT_TOPICS.filter((t) => SELECTED_TOPICS.indexOf(t) >= 0);
+    for (let i = 0; i < queue.length; i++) {
+      if (STOP_REQUESTED) break;
+      const topic = queue[i];
+      appendArticleCard(i, topic, queue.length);
+      const ticker = startLoading(
+        `正在写第 ${i + 1}/${queue.length} 篇：${topicShort(topic)}…`,
+        ['正在调取知识库…', '经络与心性正在融合…', '把道理化成生活的话…', '即将落笔，请稍候…']
+      );
+      try {
+        const payload = collectPayload();
+        payload.mode = 'article';
+        payload.selectedTopic = topic;
+        const res = await E.generate(payload);
+        LAST_RESULT = res;
+        ARTICLES.push({ topic, content: String(res.content || '').trim(), res });
+        fillArticle(i, res.content, res);
+        updateArticleToolbar();
+      } catch (e) {
+        if (e.code === 'ACCESS_CODE_REQUIRED' && typeof showAccessGate === 'function') {
+          clearInterval(ticker);
+          showAccessGate();
+          break;
+        }
+        failArticle(i, e);
+      } finally {
+        clearInterval(ticker);
+      }
+    }
+    $('loading').classList.add('hidden');
+    $('stop-gen').classList.add('hidden');
+    GENERATING = false;
+    STOP_REQUESTED = false;
+    updateWriteButton();
+    const ct = OPTS.CONTENT_TYPES.find((x) => x.key === collectPayload().contentType);
+    $('ctype-label').textContent = ct ? `${ct.label} · ${ARTICLES.length} 篇` : `${ARTICLES.length} 篇`;
+    $('draft-list').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function resetFlow() {
+    if (GENERATING) STOP_REQUESTED = true;
+    PHASE = 'idle'; SELECTED_TOPICS = []; CURRENT_TOPICS = [];
+    LAST_RESULT = null; ARTICLES = [];
+    $('result').classList.add('hidden');
+    $('empty-state').classList.remove('hidden');
+    $('error-box').classList.add('hidden');
+    $('topics').innerHTML = '';
+    $('draft-list').innerHTML = '';
+    $('topic-actions').classList.add('hidden');
+    $('draft-placeholder').classList.remove('hidden');
+    $('draft-placeholder').textContent = '↑ 请先在上方点击「生成 5 组灵感」';
+    $('topics-count').textContent = '';
+    $('draft-words').textContent = '';
+    $('ctype-label').textContent = '';
+    $('stop-gen').classList.add('hidden');
+    updateWriteButton();
   }
 
   function copyText(text) {
@@ -332,7 +440,6 @@
     if (E.setAccessCode) E.setAccessCode(v);
     $('access-error').classList.add('hidden');
     try {
-      // 用新口令重新拉取选项验证
       const r = await E.getOptions();
       OPTS = r.options; LIBS = r.libraries;
       renderControls(); bindEvents(); await renderEngineStatus();
@@ -345,20 +452,41 @@
   }
 
   function bindEvents() {
-    $('generate-btn').addEventListener('click', () => { resetFlow(); doGenerate('topics'); });
-    $('write-article-btn').addEventListener('click', () => {
-      if (!SELECTED_TOPIC) return;
-      doGenerate('article', SELECTED_TOPIC);
+    if (BOUND) return;
+    BOUND = true;
+    $('generate-btn').addEventListener('click', doGenerateTopics);
+    $('write-article-btn').addEventListener('click', generateArticles);
+    $('regen-topics').addEventListener('click', doGenerateTopics);
+    $('select-all').addEventListener('click', () => {
+      SELECTED_TOPICS = (CURRENT_TOPICS.length && SELECTED_TOPICS.length === CURRENT_TOPICS.length) ? [] : CURRENT_TOPICS.slice();
+      renderTopicCards();
     });
-    $('regen-topics').addEventListener('click', () => { resetFlow(); doGenerate('topics'); });
+    $('clear-selection').addEventListener('click', () => {
+      SELECTED_TOPICS = [];
+      renderTopicCards();
+    });
+    $('stop-gen').addEventListener('click', () => {
+      STOP_REQUESTED = true;
+      $('stop-gen').disabled = true;
+      $('loading-text').textContent = '正在停止…当前这篇写完后即中止';
+    });
+    $('draft-list').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-copy-article]');
+      if (!b) return;
+      const a = ARTICLES[Number(b.dataset.copyArticle)];
+      if (!a) return;
+      copyText(a.content);
+      b.textContent = '✓ 已复制';
+      setTimeout(() => (b.textContent = '⧉ 复制本文'), 1500);
+    });
     $('copy-draft').addEventListener('click', () => {
-      copyText(LAST_RESULT.content);
+      copyText(allArticlesText() || (LAST_RESULT ? LAST_RESULT.content : ''));
       $('copy-draft').textContent = '✓ 已复制';
-      setTimeout(() => ($('copy-draft').textContent = '⧉ 复制成品'), 1500);
+      setTimeout(() => ($('copy-draft').textContent = '⧉ 复制全部文章'), 1500);
     });
-    $('copy-all').addEventListener('click', () => copyText(LAST_RESULT.content));
+    $('copy-all').addEventListener('click', () => copyText(allArticlesText()));
     $('download-btn').addEventListener('click', () => {
-      const blob = new Blob([LAST_RESULT.content], { type: 'text/markdown;charset=utf-8' });
+      const blob = new Blob([allArticlesText()], { type: 'text/markdown;charset=utf-8' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = `素手归原_${new Date().toISOString().slice(0, 10)}.md`;
@@ -383,7 +511,6 @@
       if (v) localStorage.setItem('leiyin_zhipu_key', v);
     });
 
-    // 任何创作参数变化都重置两步流程
     const panel = document.querySelector('.control-panel');
     if (panel) {
       panel.addEventListener('change', resetFlow);
@@ -391,6 +518,7 @@
     }
     $('cultures').addEventListener('click', resetFlow);
     $('lengths').addEventListener('click', resetFlow);
+    updateWriteButton();
   }
 
   async function boot() {

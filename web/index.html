@@ -103,7 +103,7 @@
       </section>
 
       <button id="generate-btn" class="generate-btn">
-        <span class="btn-icon">✦</span> 生成 5 个选题 <span class="btn-sub">先选题，再写文章</span>
+        <span class="btn-icon">✦</span> 生成 5 组灵感 <span class="btn-sub">可多选 · 逐条生成</span>
       </button>
       <p class="disclaimer">内容仅供养生与文化参考 · 不做医疗诊断 · 不承诺疗效</p>
     </aside>
@@ -121,7 +121,7 @@
       <div id="empty-state" class="empty-state">
         <div class="empty-seal">禅</div>
         <h3>静待一念</h3>
-        <p>点击「生成 5 个选题」<br>选中喜欢的选题后，再写完整文章</p>
+        <p>点击「生成 5 组灵感」<br>勾选其中几组，逐条生成完整文章</p>
         <div class="empty-kb">
           <span>《黄帝内经》经络</span><span>素手归原古法</span><span>道德经 · 周易 · 禅修</span>
         </div>
@@ -135,21 +135,24 @@
       <div id="result" class="result hidden">
         <div id="result-meta" class="result-meta"></div>
         <section class="result-block">
-          <h3 class="result-title"><span class="title-mark">选</span> 选题灵感 <small id="topics-count"></small></h3>
+          <h3 class="result-title"><span class="title-mark">选</span> 灵感选题 <small id="topics-count"></small></h3>
           <div id="topics" class="topics"></div>
           <div id="topic-actions" class="topic-actions hidden">
-            <button id="write-article-btn" class="mini-btn primary" disabled>✎ 请先点击选中一个选题</button>
-            <button id="regen-topics" class="text-btn">↻ 换一组选题</button>
+            <button id="write-article-btn" class="mini-btn primary" disabled>✎ 请先勾选灵感（可多选）</button>
+            <button id="select-all" class="text-btn">☑ 全选</button>
+            <button id="clear-selection" class="text-btn" disabled>☐ 清空</button>
+            <button id="stop-gen" class="text-btn hidden">⏹ 停止</button>
+            <button id="regen-topics" class="text-btn">↻ 换一组灵感</button>
           </div>
         </section>
         <section class="result-block">
           <h3 class="result-title"><span class="title-mark">文</span> 完整成品 <small id="ctype-label"></small></h3>
           <div class="draft-toolbar">
-            <button id="copy-draft" class="text-btn">⧉ 复制成品</button>
+            <button id="copy-draft" class="text-btn hidden">⧉ 复制全部文章</button>
             <span id="draft-words" class="word-count"></span>
           </div>
-          <div id="draft-placeholder" class="draft-placeholder">↑ 请先在上方点击选中一个选题，再生成完整文章</div>
-          <div id="draft" class="draft"></div>
+          <div id="draft-placeholder" class="draft-placeholder">↑ 请先生成灵感并勾选，再逐条生成文章</div>
+          <div id="draft-list" class="draft-list"></div>
         </section>
       </div>
 

@@ -169,3 +169,19 @@ body{
 .mini-btn.primary:hover:not(:disabled){background:#8c4b30}
 .mini-btn.primary:disabled{background:var(--line2);color:#fff;cursor:not-allowed}
 .draft-placeholder{padding:32px 16px;text-align:center;color:var(--ink3);font-size:13px;background:var(--bg);border:1px dashed var(--line2);border-radius:10px}
+
+/* ---------- 多选灵感 / 逐条生成 ---------- */
+.draft-list{display:grid;gap:16px}
+.article-card{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden;transition:.2s}
+.article-card.writing{border-color:var(--accent2);box-shadow:0 0 0 2px var(--accent-soft)}
+.article-card.failed{border-color:#e8c4b4}
+.article-head{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.article-index{font-family:"STKaiti","KaiTi",serif;font-size:16px;color:var(--accent);flex:0 0 auto}
+.article-title{flex:1;font-size:13.5px;color:var(--ink);min-width:120px}
+.article-status{font-size:11.5px;color:var(--ink3);white-space:nowrap}
+.article-body{padding:20px 24px;font-size:14.5px;line-height:2.05;color:var(--ink);white-space:pre-wrap;word-break:break-word}
+.article-body h1,.article-body h2,.article-body h3{font-family:"STSong","SimSun",serif;color:var(--accent);margin:14px 0 8px}
+.article-wait{color:var(--ink3);font-size:13px;padding:12px 0}
+.article-fail{color:#9c4a30;font-size:13px;line-height:1.9}
+.article-fail span{color:var(--ink3)}
+.topic-actions .text-btn:disabled{color:var(--ink3);opacity:.5;cursor:not-allowed}
