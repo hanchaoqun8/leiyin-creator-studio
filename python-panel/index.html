@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>素手归原写作面板</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ 顶部 ============ -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-seal">素<br>手</div>
+      <div class="brand-text">
+        <h1>素手归原 <span class="brand-sub">· 写作面板</span></h1>
+        <p class="brand-motto">禅为根 · 拍为用 · 生活为体 · 国学为魂</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div id="kb-status" class="kb-status" title="三大知识库挂载状态">
+        <span class="kb-dot"></span><span id="kb-count">知识库加载中…</span>
+      </div>
+      <div id="engine-badge" class="engine-badge">引擎检测中…</div>
+      <button id="theme-btn" class="icon-btn" title="切换深浅色">☾</button>
+    </div>
+  </header>
+
+  <div class="workspace">
+
+    <!-- ============ 左侧：创作控制台 ============ -->
+    <aside class="panel control-panel">
+      <div class="panel-head">
+        <h2>创作控制台</h2>
+        <span class="panel-hint">选择 + 自定义，随心组合</span>
+      </div>
+
+      <section class="field">
+        <label class="field-label"><span class="num">壹</span> 创作主题大类</label>
+        <select id="topic" class="select">
+          <optgroup label="素手归原 · 中医经络专业类">
+            <option value="素手归原基础原理（黄帝内经古法）">素手归原基础原理（黄帝内经古法）</option>
+            <option value="七经八脉疏通讲解">七经八脉疏通讲解</option>
+            <option value="气血淤堵与身体病痛根源">气血淤堵与身体病痛根源</option>
+            <option value="拍打震动唤醒身体自愈力">拍打震动唤醒身体自愈力</option>
+            <option value="肩颈经络疏通养护">肩颈经络疏通养护</option>
+            <option value="腰背经络排毒调理">腰背经络排毒调理</option>
+            <option value="四肢经络畅通养生">四肢经络畅通养生</option>
+            <option value="全身微循环净化">全身微循环净化</option>
+            <option value="归原拍排寒、排湿、排浊气">归原拍排寒、排湿、排浊气</option>
+            <option value="拍打频率、手法、禁忌科普">拍打频率、手法、禁忌科普</option>
+          </optgroup>
+          <optgroup label="身心情绪 · 精神疗愈类">
+            <option value="现代人精神焦虑、心神不宁调理">现代人精神焦虑、心神不宁调理</option>
+            <option value="情绪内耗、执念放下">情绪内耗、执念放下</option>
+            <option value="压力大、浮躁、失眠多梦修复">压力大、浮躁、失眠多梦修复</option>
+            <option value="肝郁气滞、情绪堵对应身体堵">肝郁气滞、情绪堵对应身体堵</option>
+            <option value="心神静定、向内修行">心神静定、向内修行</option>
+          </optgroup>
+          <optgroup label="生活养生维度">
+            <option value="睡眠调理、作息养气血">睡眠调理、作息养气血</option>
+            <option value="饮食养生、脾胃养护">饮食养生、脾胃养护</option>
+            <option value="四季顺应自然养生">四季顺应自然养生</option>
+            <option value="居家日常轻拍打养生">居家日常轻拍打养生</option>
+            <option value="动静结合身心平衡">动静结合身心平衡</option>
+          </optgroup>
+          <optgroup label="人群精准专题">
+            <option value="儿童：情绪焦虑、多动、脾胃弱、心神不安调理">儿童：情绪焦虑、多动、脾胃弱、心神不安调理</option>
+            <option value="女性：肝郁、气血不足、宫寒、情绪敏感、内耗">女性：肝郁、气血不足、宫寒、情绪敏感、内耗</option>
+            <option value="中老年：经络僵硬、气血衰退、失眠、体虚乏力">中老年：经络僵硬、气血衰退、失眠、体虚乏力</option>
+          </optgroup>
+          <optgroup label="国学悟道融合类">
+            <option value="道德经·上善若水身心修行">道德经·上善若水身心修行</option>
+            <option value="周易阴阳平衡、身心对应规律">周易阴阳平衡、身心对应规律</option>
+            <option value="禅修悟道、明心见性">禅修悟道、明心见性</option>
+            <option value="心性决定健康、命运顺应自然">心性决定健康、命运顺应自然</option>
+            <option value="家庭孝道、心境平和养元气">家庭孝道、心境平和养元气</option>
+          </optgroup>
+          <option value="__custom__">其他（自定义话题）</option>
+        </select>
+        <div class="custom-row hidden" id="topic-custom-row">
+          <input id="topic-custom" class="input" type="text" placeholder="手动输入任意归原拍 / 养生 / 心性 / 家庭话题…">
+        </div>
+      </section>
+
+      <section class="field">
+        <label class="field-label"><span class="num">贰</span> 文化融合 <small>（多选，自动挂载知识库）</small></label>
+        <div id="culture-grid" class="chip-grid"></div>
+        <div class="custom-row">
+          <input id="culture-custom" class="input" type="text" placeholder="自定义文化维度，回车加入…">
+        </div>
+      </section>
+
+      <section class="field">
+        <label class="field-label"><span class="num">叁</span> 产出内容类型</label>
+        <select id="ctype" class="select">
+          <option value="小红书图文">小红书生活化图文文案</option>
+          <option value="视频号短视频文案">视频号短视频短文案</option>
+          <option value="短视频口播解说稿">短视频口播解说稿（可直接对着读）</option>
+          <option value="高清海报配图短句">高清海报配图短句文案</option>
+          <option value="禅意治愈诗词">禅意治愈诗词创作</option>
+          <option value="完整短视频拍摄脚本">完整短视频拍摄脚本（镜头+台词+节奏）</option>
+          <option value="公众号长文">公众号长文</option>
+          <option value="朋友圈文案">朋友圈文案</option>
+        </select>
+      </section>
+
+      <section class="field">
+        <label class="field-label"><span class="num">肆</span> 文风风格</label>
+        <select id="style" class="select">
+          <option value="温柔治愈生活化闲聊风">温柔治愈生活化闲聊风</option>
+          <option value="专业通俗科普风">专业通俗科普风</option>
+          <option value="禅意静心悟道风">禅意静心悟道风</option>
+          <option value="家庭暖心分享风">家庭暖心分享风</option>
+          <option value="短视频口语快节奏风">短视频口语快节奏风</option>
+          <option value="高级简约文案风">高级简约文案风</option>
+          <option value="__custom__">其他（自定义风格）</option>
+        </select>
+        <div class="custom-row hidden" id="style-custom-row">
+          <input id="style-custom" class="input" type="text" placeholder="自定义任意风格…">
+        </div>
+      </section>
+
+      <section class="field">
+        <label class="field-label"><span class="num">伍</span> 目标受众</label>
+        <select id="audience" class="select">
+          <option value="宝妈/亲子家庭">宝妈/亲子家庭</option>
+          <option value="情绪内耗女性群体">情绪内耗女性群体</option>
+          <option value="亚健康都市成年人">亚健康都市成年人</option>
+          <option value="中老年养生人群">中老年养生人群</option>
+          <option value="禅修、国学爱好者">禅修、国学爱好者</option>
+          <option value="养生行业学员、客户">养生行业学员、客户</option>
+          <option value="__custom__">其他（自定义受众）</option>
+        </select>
+        <div class="custom-row hidden" id="audience-custom-row">
+          <input id="audience-custom" class="input" type="text" placeholder="自定义受众…">
+        </div>
+      </section>
+
+      <section class="field">
+        <label class="field-label"><span class="num">陆</span> 字数篇幅</label>
+        <div id="lengths" class="seg"></div>
+        <div class="custom-row hidden" id="length-custom-row">
+          <input id="length-custom" class="input" type="number" min="50" max="8000" placeholder="任意字数，如 800">
+        </div>
+      </section>
+
+      <section class="field">
+        <label class="field-label"><span class="num">柒</span> 生成智能体</label>
+        <select id="engine" class="select"></select>
+      </section>
+
+      <section class="field">
+        <label class="field-label">补充要求 <small>（可选）</small></label>
+        <textarea id="notes" class="textarea" rows="2" placeholder="想强调的角度、要避开的点、特定场景…"></textarea>
+      </section>
+
+      <button id="generate-btn" class="generate-btn">
+        <span class="btn-icon">✦</span> 一键生成 · 选题 + 成品 <span class="btn-sub">4-5选题 + 1篇完整文案</span>
+      </button>
+      <button id="topics-btn" class="mini-btn" style="width:100%;margin-top:8px">
+        仅生成 4-5 组灵感 · 勾选后逐条写
+      </button>
+      <p class="disclaimer">19篇原创范文为最高行文蓝本 · 不做医疗诊断 · 不承诺疗效</p>
+    </aside>
+
+    <!-- ============ 右侧：产出 ============ -->
+    <main class="panel output-panel">
+      <div class="panel-head">
+        <h2>创作产出</h2>
+        <div class="output-actions">
+          <button id="copy-all" class="text-btn hidden">⧉ 复制全部</button>
+          <button id="download-btn" class="text-btn hidden">↓ 下载 .md</button>
+        </div>
+      </div>
+
+      <div id="empty-state" class="empty-state">
+        <div class="empty-seal">禅</div>
+        <h3>静待一念</h3>
+        <p>点「一键生成」得 4-5 个选题 + 一篇完整成品<br>或先出灵感，勾选后逐条写</p>
+        <div class="empty-kb">
+          <span>★ 19篇原创范文·最高优先</span><span>古法自愈</span><span>黄帝内经</span><span>国学悟道</span>
+        </div>
+      </div>
+
+      <div id="loading" class="loading hidden">
+        <div class="loading-ring"></div>
+        <p id="loading-text">正在调取知识库，静心酝酿…</p>
+      </div>
+
+      <div id="result" class="result hidden">
+        <div id="result-meta" class="result-meta"></div>
+        <section class="result-block">
+          <h3 class="result-title"><span class="title-mark">选</span> 原创选题 <small id="topics-count"></small></h3>
+          <div id="topics" class="topics"></div>
+          <div id="topic-actions" class="topic-actions hidden">
+            <button id="write-article-btn" class="mini-btn primary" disabled>✎ 请先勾选灵感（可多选）</button>
+            <button id="select-all" class="text-btn">☑ 全选</button>
+            <button id="clear-selection" class="text-btn" disabled>☐ 清空</button>
+            <button id="stop-gen" class="text-btn hidden">⏹ 停止</button>
+            <button id="regen-topics" class="text-btn">↻ 换一组灵感</button>
+          </div>
+        </section>
+        <section class="result-block">
+          <h3 class="result-title"><span class="title-mark">文</span> 完整成品 <small id="ctype-label"></small></h3>
+          <div class="draft-toolbar">
+            <button id="copy-draft" class="text-btn hidden">⧉ 复制全部文章</button>
+            <span id="draft-words" class="word-count"></span>
+          </div>
+          <div id="draft-placeholder" class="draft-placeholder">↑ 点「一键生成」直接出成品；或勾选上方选题后逐条生成</div>
+          <div id="draft-list" class="draft-list"></div>
+        </section>
+      </div>
+
+      <div id="error-box" class="error-box hidden"></div>
+    </main>
+  </div>
+
+  <!-- ============ 访问口令门禁 ============ -->
+  <div id="access-overlay" class="overlay hidden">
+    <div class="access-card">
+      <div class="access-seal">禅</div>
+      <h3>请输入访问口令</h3>
+      <p>为保护平台令牌不被滥用，本平台设有访问口令。<br>口令只在你的浏览器本地保存，只需输入一次。</p>
+      <input id="access-input" class="input" type="password" placeholder="访问口令" autocomplete="off">
+      <button id="access-submit" class="generate-btn" style="width:100%;margin:14px 0 0">进入写作面板</button>
+      <p id="access-error" class="access-error hidden">口令不正确，请再试一次</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var KEY='ssgy-access-key';
+  var accessKey=localStorage.getItem(KEY)||'';
+  var CURRENT_TOPICS=[], SELECTED_TOPICS=[], ARTICLES=[], GENERATING=false, STOP_REQUESTED=false;
+  var EXTRA_CULTURES=[];
+  // 云端网关要求每个接口请求都带 sharecode。
+  // 从任意入口打开（分享链接 / WorkBuddy 内部预览页）都强制补上应用固定分享码，
+  // 不能只依赖 location.search——内部预览页的查询串里没有 sharecode。
+  var SHARECODE='IPNWKZ6WVK';
+  var _sc=(location.search.match(/[?&]sharecode=([^&]+)/)||[])[1];
+  var SC=_sc?decodeURIComponent(_sc):SHARECODE;
+  function API(p){return p+'?sharecode='+encodeURIComponent(SC)}
+
+  // ---- 文化多选 ----
+  var CULTURES=[
+    {v:'黄帝内经中医经络体系',d:'经络气血',on:true},
+    {v:'素手归原古法自愈理论',d:'拍打疏通',on:true},
+    {v:'道德经心性智慧',d:'上善若水',on:false},
+    {v:'周易阴阳平衡规律',d:'阴阳平衡',on:false},
+    {v:'禅修悟道静定智慧',d:'静定破执',on:false},
+    {v:'家庭孝道、亲子身心养护文化',d:'家和文化',on:false},
+    {v:'生活饮食睡眠养生常识',d:'日常养护',on:false}
+  ];
+  function renderCultures(){
+    var box=$('culture-grid'),items=CULTURES.concat(EXTRA_CULTURES.map(function(v){return {v:v,d:'自定义',on:true,custom:true}}));
+    box.innerHTML=items.map(function(c,i){
+      return '<button type="button" class="chip'+(c.on?' active':'')+'" data-ci="'+i+'"><span class="cb"></span>'+esc(c.v)+' <small>'+esc(c.d)+'</small></button>';
+    }).join('');
+    Array.prototype.forEach.call(box.querySelectorAll('.chip'),function(el){
+      el.onclick=function(){
+        var i=parseInt(el.dataset.ci),all=CULTURES.concat(EXTRA_CULTURES.map(function(v){return {v:v,d:'自定义',on:true,custom:true}}));
+        all[i].on=!all[i].on;
+        if(all[i].custom)EXTRA_CULTURES[i-CULTURES.length]=all[i].v;
+        renderCultures();
+      };
+    });
+  }
+  function getCultures(){
+    var all=CULTURES.concat(EXTRA_CULTURES.map(function(v){return {v:v,d:'自定义',on:true,custom:true}}));
+    return all.filter(function(c){return c.on}).map(function(c){return c.v});
+  }
+  $('culture-custom').addEventListener('keydown',function(e){
+    if(e.key!=='Enter')return;
+    var v=this.value.trim();if(!v)return;
+    if(CULTURES.map(function(c){return c.v}).indexOf(v)<0&&EXTRA_CULTURES.indexOf(v)<0)EXTRA_CULTURES.push(v);
+    this.value='';renderCultures();
+  });
+  renderCultures();
+
+  // ---- 主题 ----
+  var saved=localStorage.getItem('ssgy-theme');
+  function applyTheme(t){
+    if(t==='dark')document.documentElement.setAttribute('data-theme','dark');
+    else document.documentElement.removeAttribute('data-theme');
+    $('theme-btn').textContent=(t==='dark')?'☀':'☾';
+  }
+  if(saved)applyTheme(saved);
+  else if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches)applyTheme('dark');
+  else applyTheme('light');
+  $('theme-btn').onclick=function(){var d=document.documentElement.getAttribute('data-theme')==='dark';var n=d?'light':'dark';applyTheme(n);localStorage.setItem('ssgy-theme',n)};
+
+  // ---- 门禁 ----
+  function showAccess(){$('access-overlay').classList.remove('hidden');setTimeout(function(){$('access-input').focus()},50)}
+  function hideAccess(){$('access-overlay').classList.add('hidden')}
+  $('access-submit').onclick=function(){
+    var v=$('access-input').value.trim();
+    if(!v){$('access-error').classList.remove('hidden');return;}
+    fetch(API('/api/verify'),{headers:{'X-Access-Key':v}}).then(function(r){return r.json()}).then(function(d){
+      if(d.ok){accessKey=v;localStorage.setItem(KEY,v);$('access-error').classList.add('hidden');hideAccess();initAfterAccess()}
+      else $('access-error').classList.remove('hidden');
+    }).catch(function(){$('access-error').classList.remove('hidden')});
+  };
+  $('access-input').addEventListener('keydown',function(e){if(e.key==='Enter')$('access-submit').click()});
+
+  // ---- 自定义联动 ----
+  function bind(sel,row){var s=$(sel),r=$(row);function u(){r.classList.toggle('hidden',s.value!=='__custom__')}s.addEventListener('change',u);u()}
+  bind('topic','topic-custom-row');bind('style','style-custom-row');bind('audience','audience-custom-row');
+
+  // ---- 字数 ----
+  var LENGTHS=[{v:50,t:'50字短句'},{v:200,t:'200字短图文'},{v:500,t:'500字爆款'},{v:1000,t:'1000字长文'},{v:'__custom__',t:'自定义'}];
+  var curLen=500;
+  (function(){var box=$('lengths');LENGTHS.forEach(function(o){var b=document.createElement('button');b.className='seg-btn'+(o.v===curLen?' active':'');b.textContent=o.t;b.onclick=function(){curLen=o.v;Array.prototype.forEach.call(box.children,function(x){x.classList.remove('active')});b.classList.add('active');$('length-custom-row').classList.toggle('hidden',o.v!=='__custom__')};box.appendChild(b)})})();
+  function getWords(){return curLen==='__custom__'?(parseInt($('length-custom').value)||500):parseInt(curLen)}
+  function cv(id,cid){var s=$(id).value;return s==='__custom__'?($(cid).value||''):s}
+
+  // ---- 引擎/知识库加载 ----
+  function loadInfo(){
+    fetch(API('/api/engines'),{headers:{'X-Access-Key':accessKey}}).then(function(r){if(r.status===401){showAccess();throw 0}return r.json()}).then(function(d){
+      var sel=$('engine');sel.innerHTML='';
+      (d.engines||[]).forEach(function(e){
+        if(e.id==='doubao')return;
+        var o=document.createElement('option');o.value=e.id;o.textContent=e.name+(e.ready?(' · '+e.model):' · 未配置令牌');
+        if(!e.ready)o.disabled=true;if(e.ready&&!sel.value)sel.value=e.id;sel.appendChild(o);
+      });
+      $('engine-badge').textContent='引擎：'+(sel.selectedOptions[0]?sel.selectedOptions[0].textContent.split(' · ')[0]:'—');
+      var names=d.kb_names||{},cnt=d.kb_libs||{},bits=[];
+      var short={fanwen:'19篇范文',paida:'古法自愈',jingluo:'黄帝内经',guoxue:'国学悟道'};
+      (d.kb_priority||['fanwen','paida','jingluo','guoxue']).forEach(function(k,i){
+        if(names[k])bits.push((i===0?'★ ':'')+short[k]+' '+(cnt[k]||0));
+      });
+      $('kb-count').textContent='四库 '+(d.kb_count||0)+' 篇 · '+bits.join(' / ');
+    }).catch(function(){})
+  }
+  function initAfterAccess(){loadInfo()}
+
+  // ---- payload ----
+  function collectPayload(){
+    return {topic:cv('topic','topic-custom'),audience:cv('audience','audience-custom'),
+      style:cv('style','style-custom'),content_type:$('ctype').value,words:getWords(),
+      cultures:getCultures(),engine:$('engine').value,extra:$('notes').value.trim()}
+  }
+  function showErr(m){$('error-box').textContent=m;$('error-box').classList.remove('hidden')}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function topicShort(t){return String(t||'').split(/[—–-：:]/)[0].trim().slice(0,24)||'未命名选题'}
+  function ticker(msg,msgs){var i=0;$('loading-text').textContent=msg;var t=setInterval(function(){i++;$('loading-text').textContent=msgs[i%msgs.length]},1500);return t}
+
+  function gen(payload,mode){
+    var p=Object.assign({},payload,{mode:mode});
+    return fetch(API('/api/generate'),{method:'POST',headers:{'Content-Type':'application/json','X-Access-Key':accessKey},body:JSON.stringify(p)})
+      .then(function(r){if(r.status===401){showAccess();throw new Error('auth')}return r.json()})
+      .then(function(d){if(!d.ok)throw new Error(d.error||'生成失败');return d});
+  }
+
+  function clearOutput(){
+    $('error-box').classList.add('hidden');$('empty-state').classList.add('hidden');$('result').classList.add('hidden');
+    $('draft-list').innerHTML='';ARTICLES=[];$('copy-draft').classList.add('hidden');
+    $('copy-all').classList.add('hidden');$('download-btn').classList.add('hidden');
+  }
+  function metaLine(p,d){
+    $('result-meta').innerHTML='<span class="meta-tag">主题 · '+esc(p.topic)+'</span>'+
+      '<span class="meta-tag">文化 · '+esc(p.cultures.join('+')||'全库')+'</span>'+
+      '<span class="meta-tag">类型 · '+esc(p.content_type)+'</span>'+
+      '<span class="meta-tag">受众 · '+esc(p.audience)+'</span>'+
+      '<span class="meta-tag">字数 · '+p.words+'</span>'+
+      '<span class="meta-tag">引擎 · '+esc(d.model||'')+'</span>'+
+      (d.kb_used?'<span class="meta-tag">★ 范文蓝本已注入</span>':'');
+  }
+  function parseTopics(text){
+    var lines=String(text||'').split(/\n/).map(function(s){return s.trim()}).filter(Boolean),out=[];
+    lines.forEach(function(l){
+      if(/^\s*[-•·]\s/.test(l))return;
+      var t=l,prev;
+      do{prev=t;t=t.replace(/^\s*(?:\d+[\.、]|[一二三四五][\.、]?)\s*/,'').trim()}while(t!==prev);
+      t=t.replace(/^['"「『\s]+|['"」』\s]+$/g,'').trim();
+      var bad=/编号|选题标题|切入角度|格式|示例|^\d+\s*$/.test(t);
+      if(!bad&&t.length>4&&t.length<120)out.push(t);
+    });
+    return out.slice(0,5);
+  }
+  function renderTopics(){
+    var box=$('topics');
+    box.innerHTML=CURRENT_TOPICS.length?CURRENT_TOPICS.map(function(t,i){
+      var picked=SELECTED_TOPICS.indexOf(t)>=0;
+      var mm=t.match(/^(.+?)\s*[—–-]\s*(.+)$/);
+      return '<div class="topic-card'+(picked?' selected':'')+'" data-topic="'+esc(t)+'">'+
+        '<div class="topic-num">'+(['一','二','三','四','五'][i]||(i+1))+'</div>'+
+        '<div class="topic-body"><strong>'+esc(mm?mm[1]:t)+'</strong>'+(mm&&mm[2]?'<span>'+esc(mm[2])+'</span>':'')+'</div>'+
+        '<div class="topic-check">✓</div></div>';
+    }).join(''):'<div class="topic-card"><div class="topic-body"><span>本次未解析出选题，请点「换一组灵感」重试。</span></div></div>';
+    Array.prototype.forEach.call(box.querySelectorAll('.topic-card[data-topic]'),function(el){
+      el.onclick=function(){
+        var t=el.dataset.topic,idx=SELECTED_TOPICS.indexOf(t);
+        if(idx>=0)SELECTED_TOPICS.splice(idx,1);else SELECTED_TOPICS.push(t);
+        el.classList.toggle('selected');updateSelBar();
+      };
+    });
+    updateSelBar();
+  }
+  function updateSelBar(){
+    var n=SELECTED_TOPICS.length,b=$('write-article-btn');
+    b.disabled=n===0;b.textContent=n?('✎ 逐条生成 '+n+' 篇完整文案'):'✎ 请先勾选灵感（可多选）';
+    $('clear-selection').disabled=n===0;
+  }
+  $('select-all').onclick=function(){SELECTED_TOPICS=CURRENT_TOPICS.slice();renderTopics()};
+  $('clear-selection').onclick=function(){SELECTED_TOPICS=[];renderTopics()};
+  $('regen-topics').onclick=function(){$('topics-btn').click()};
+  $('stop-gen').onclick=function(){STOP_REQUESTED=true;this.disabled=true};
+
+  // ---- 文章卡片 ----
+  function appendCard(i,topic){
+    var card=document.createElement('div');card.className='article-card writing';card.id='art-'+i;
+    card.innerHTML='<div class="article-head"><span class="article-index">'+String(i+1).padStart(2,'0')+'</span>'+
+      '<strong class="article-title">'+esc(topicShort(topic))+'</strong>'+
+      '<span class="article-status" id="art-'+i+'-status">生成中…</span>'+
+      '<button class="text-btn" data-copy="'+i+'">⧉ 复制本文</button></div>'+
+      '<div class="article-body" id="art-'+i+'-body"><div class="article-wait">正在调取知识库，逐条落笔…</div></div>'+
+      '<div class="review-zone hidden" id="review-'+i+'"></div>';
+    $('draft-list').appendChild(card);
+  }
+  function fillCard(i,content,model,score,regen,review){
+    var body=$('art-'+i+'-body');body.innerHTML=formatDraft(content);
+    var tag=(score!=null?('文风自检 '+score+'/12'+(regen?' · 已按范文重写':'')):'文风已校对');
+    $('art-'+i+'-status').textContent='✓ 完成 · '+tag+' · '+model;
+    $('art-'+i).classList.remove('writing');
+    if(review)renderReview(i,content,review,model);
+  }
+
+  // ======== 后置审核面板（每篇独立） ========
+  var DIM_KEYS=['受众需求贴合度','心理张力','共情感染力','内容真实感','语言自然度','禅意分寸感','传播适配度','合规安全度'];
+  var DIMS_SHORT=['受众贴合','心理张力','共情感染','真实感','自然度','禅意分寸','传播适配','合规安全'];
+  function verdictClass(v){return v==='合格'?'ok':(v==='需要微调'?'warn':'danger')}
+
+  function radarSVG(dims,size){
+    size=size||280;
+    var cx=size/2, cy=size/2+4, R=size*0.33, n=8;
+    function pt(i,r){var a=-Math.PI/2+i*2*Math.PI/n;return [cx+Math.cos(a)*r,cy+Math.sin(a)*r]}
+    function poly(vals){return vals.map(function(v,i){var p=pt(i,R*v/100);return p[0].toFixed(1)+','+p[1].toFixed(1)}).join(' ')}
+    var grid='';
+    [25,50,75,100].forEach(function(lv){
+      grid+='<polygon points="'+poly([lv,lv,lv,lv,lv,lv,lv,lv])+'" fill="none" stroke="var(--line2)" stroke-width="1" opacity="'+(lv===100?'.9':'.45')+'"/>';
+    });
+    for(var i=0;i<n;i++){var p=pt(i,R);grid+='<line x1="'+cx+'" y1="'+cy+'" x2="'+p[0].toFixed(1)+'" y2="'+p[1].toFixed(1)+'" stroke="var(--line2)" stroke-width="1" opacity=".5"/>'}
+    var vals=DIM_KEYS.map(function(k){return (dims&&dims[k]!=null)?dims[k]:0});
+    var dataPoly=poly(vals);
+    var dots='';
+    vals.forEach(function(v,i){var p=pt(i,R*v/100);dots+='<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="3" fill="var(--accent)"/>'});
+    var labels='';
+    DIMS_SHORT.forEach(function(short,i){
+      var p=pt(i,R+18), anchor='middle';
+      if(p[0]<cx-6)anchor='end';else if(p[0]>cx+6)anchor='start';
+      labels+='<text x="'+p[0].toFixed(1)+'" y="'+(p[1]+4).toFixed(1)+'" text-anchor="'+anchor+'" font-size="10.5" fill="var(--ink2)">'+short+'</text>';
+      labels+='<text x="'+p[0].toFixed(1)+'" y="'+(p[1]+16).toFixed(1)+'" text-anchor="'+anchor+'" font-size="10" font-weight="700" fill="var(--accent)">'+vals[i]+'</text>';
+    });
+    return '<svg viewBox="0 0 '+size+' '+(size+14)+'" width="100%" style="max-width:'+size+'px;display:block;margin:0 auto" xmlns="http://www.w3.org/2000/svg">'+
+      grid+'<polygon points="'+dataPoly+'" fill="var(--accent)" fill-opacity="0.18" stroke="var(--accent)" stroke-width="2"/>'+dots+labels+'</svg>';
+  }
+
+  function renderReview(i,content,review,model){
+    var rv=review, rep=rv.report||{}, dims=rv.dims||{}, typo=rv.typo_list||[];
+    var med=rep.medical_hits||[], ratio=rep.ratio||{};
+    var verdict=rep.verdict||'合格', vc=verdictClass(verdict);
+    var lowDims=DIM_KEYS.slice().sort(function(a,b){return (dims[a]||0)-(dims[b]||0)}).slice(0,3)
+      .map(function(k){return k+' '+(dims[k]||0)}).join('、');
+
+    // 原文预览（医疗风险词高亮）
+    var preview=esc(content);
+    med.forEach(function(m){
+      var w=esc(m.word);
+      if(!w)return;
+      preview=preview.split(w).join('<mark class="risk-hl">'+w+'</mark>');
+    });
+
+    var typoHtml=typo.length?('<ol class="typo-list">'+typo.map(function(x){
+      return '<li><span class="typo-line">第'+x.line+'行</span><span class="typo-badge lv-'+({高:'h',中:'m',低:'l'}[x.level]||'l')+'">'+esc(x.problem)+'</span>'+
+        '<div class="typo-orig">'+esc(x.orig)+'</div><div class="typo-sug">建议：'+esc(x.suggest)+'</div></li>';
+    }).join('')+'</ol>'):'<p class="review-empty">✓ 未发现明显错别字、漏字、标点或专有名词问题。</p>';
+
+    var medHtml=med.length?('<div class="med-list">'+med.map(function(m){
+      return '<div class="med-item"><span class="med-word">'+esc(m.word)+'</span><span class="med-line">第'+m.line+'行</span><span class="med-ctx">'+esc(m.context)+'</span></div>';
+    }).join('')+'</div>'):'<p class="review-empty">✓ 未扫描到医疗违规话术。</p>';
+
+    var unfamiliar=rep.unfamiliar||[];
+    var unfamiliarHtml=unfamiliar.length?unfamiliar.map(function(w){return '<span class="unf-chip">'+esc(w)+'</span>'}).join(''):'<span class="review-empty-inline">无</span>';
+
+    var ratioOk=ratio.ok;
+    var ratioHtml='<div class="ratio-bar">'+
+      '<span class="rb-body" style="width:'+(ratio.body||0)+'%"></span>'+
+      '<span class="rb-guo" style="width:'+(ratio.guoxue||0)+'%"></span>'+
+      '<span class="rb-other" style="width:'+(ratio.other||0)+'%"></span></div>'+
+      '<div class="ratio-legend"><span><i class="dot-body"></i>体感感悟 '+(ratio.body||0)+'%</span>'+
+      '<span><i class="dot-guo"></i>国学点缀 '+(ratio.guoxue||0)+'%</span>'+
+      '<span><i class="dot-other"></i>其他 '+(ratio.other||0)+'%</span>'+
+      '<span class="ratio-verdict '+(ratioOk?'ok':'warn')+'">'+(ratioOk?'配比与范本一致':'配比需调整（国学占比偏高或体感不足）')+'</span></div>';
+
+    var html=
+      '<div class="review-head">'+
+        '<div class="review-head-title"><span class="review-seal">审</span><strong>后置审核报告</strong>'+
+          '<span class="review-model">· '+esc(model||'')+'</span></div>'+
+        '<button class="review-toggle text-btn" data-rtoggle="'+i+'">收起 ▲</button>'+
+      '</div>'+
+      '<div class="review-body" id="review-body-'+i+'">'+
+        // 1 原文预览
+        '<section class="rv-sec"><h4><span>①</span> 原文预览 <small>风险词已高亮</small></h4>'+
+          '<div class="rv-preview">'+preview+'</div></section>'+
+        // 2 纠错清单
+        '<section class="rv-sec"><h4><span>②</span> 文字纠错清单 <small>共 '+typo.length+' 处 · 仅提示，不自动改</small></h4>'+typoHtml+'</section>'+
+        // 3 风格合规报告
+        '<section class="rv-sec"><h4><span>③</span> 风格 & 合规分析报告</h4>'+
+          '<div class="repscore-row"><div class="repscore-ring"><div class="repscore-num">'+(rep.style_score||0)+'</div><div class="repscore-label">文风匹配度</div></div>'+
+            '<div class="rep-verdict-wrap"><div class="rep-verdict '+vc+'">'+esc(verdict)+'</div><p class="rep-reason">'+esc(rep.verdict_reason||'')+'</p>'+
+            (rep.fake_case_risk?'<p class="rep-alert">⚠ 检测到疑似编造个案表述，请核实后再发布。</p>':'')+'</div></div>'+
+          '<div class="rep-sub"><strong>陌生新词 / 网络套话排查</strong><div class="unf-wrap">'+unfamiliarHtml+'</div></div>'+
+          '<div class="rep-sub"><strong>医疗违规话术扫描 <small>（风险高亮）</small></strong>'+medHtml+'</div>'+
+          '<div class="rep-sub"><strong>内容配比检查</strong>'+ratioHtml+'</div>'+
+        '</section>'+
+        // 4 八维雷达
+        '<section class="rv-sec"><h4><span>④</span> 八维打分 <small>雷达评估</small></h4>'+
+          '<div class="radar-wrap">'+radarSVG(dims,300)+'</div>'+
+          '<p class="low-tip">待提升维度：<strong>'+esc(lowDims)+'</strong></p>'+
+        '</section>'+
+        // 5 微调按钮
+        '<section class="rv-sec"><h4><span>⑤</span> 修改操作</h4>'+
+          '<div class="refine-btns">'+
+            '<button class="refine-btn primary" data-refine="'+i+'" data-action="auto">✦ 一键自动微调</button>'+
+            '<button class="refine-btn" data-refine="'+i+'" data-action="paragraph">✎ 指定段落修改</button>'+
+            '<button class="refine-btn ghost" data-refine="'+i+'" data-action="keep">✓ 保留原版</button>'+
+          '</div>'+
+          '<div class="refine-instruction hidden" id="refine-inst-'+i+'">'+
+            '<textarea class="textarea" id="refine-para-'+i+'" rows="2" placeholder="粘贴要修改的那一段原文（可留空，将由你下面的要求定位）"></textarea>'+
+            '<textarea class="textarea" id="refine-note-'+i+'" rows="2" placeholder="说明怎么改，如：语气再轻一点、删掉最后一句、多一点手部体感…"></textarea>'+
+            '<button class="mini-btn primary" data-refine-go="'+i+'">确认修改</button>'+
+          '</div>'+
+        '</section>'+
+        // 6 导出提示词
+        '<section class="rv-sec"><h4><span>⑥</span> 配套提示词导出 <small>可复制到豆包继续创作/改写</small></h4>'+
+          '<textarea class="textarea export-prompt" id="export-prompt-'+i+'" rows="8" readonly>'+esc(rv.export_prompt||'')+'</textarea>'+
+          '<button class="text-btn" data-export="'+i+'">⧉ 复制本次完整提示词</button>'+
+        '</section>'+
+      '</div>';
+    var zone=$('review-'+i);zone.innerHTML=html;zone.classList.remove('hidden');
+  }
+  function failCard(i,msg){
+    var body=$('art-'+i+'-body');body.innerHTML='<div class="article-fail">本篇生成失败：'+esc(msg)+'<br><span>其他灵感会继续生成，不受影响。</span></div>';
+    $('art-'+i+'-status').textContent='✗ 失败';$('art-'+i).classList.add('failed');
+  }
+  function formatDraft(text){
+    return esc(text).replace(/^### (.*)$/gm,'<h3>$1</h3>').replace(/^## (.*)$/gm,'<h2>$1</h2>').replace(/^# (.*)$/gm,'<h1>$1</h1>');
+  }
+  function updateArticleBar(){
+    var n=ARTICLES.length;
+    $('draft-words').textContent=n?('共 '+n+' 篇 · '+ARTICLES.reduce(function(s,a){return s+a.content.replace(/\s/g,'').length},0)+' 字'):'';
+    $('copy-draft').classList.toggle('hidden',n===0);
+    $('copy-all').classList.toggle('hidden',n===0);
+    $('download-btn').classList.toggle('hidden',n===0);
+  }
+
+  // ---- 主按钮：批量选题+成品 ----
+  $('generate-btn').onclick=function(){
+    if(GENERATING)return;
+    var p=collectPayload();
+    if(!p.topic||!p.audience||!p.style){showErr('请填写完整的自定义选项');return}
+    if(!p.engine){showErr('没有可用的生成引擎（智谱 / 魔搭）');return}
+    GENERATING=true;this.disabled=true;
+    clearOutput();$('loading').classList.remove('hidden');
+    var tk=ticker('正在调取三大知识库…',['正在匹配黄帝内经经络素材…','正在融入素手归原拍打原理…','道德经与禅修心性正在汇入…','正在落笔成文，请稍候…']);
+    gen(p,'batch').then(function(d){
+      clearInterval(tk);$('loading').classList.add('hidden');
+      CURRENT_TOPICS=(d.topics&&d.topics.length)?d.topics:parseTopics(d.content);
+      SELECTED_TOPICS=[];ARTICLES=[];
+      metaLine(p,d);
+      renderTopics();
+      $('topics-count').textContent=CURRENT_TOPICS.length?CURRENT_TOPICS.length+' 组 · 可勾选继续写':'';
+      $('topic-actions').classList.remove('hidden');
+      var article=String(d.article||d.content||'').trim();
+      appendCard(0,p.topic+' · '+p.content_type);
+      fillCard(0,article,d.model,d.style_score,d.style_regen,d.review);
+      ARTICLES.push({topic:p.topic,content:article,review:d.review,model:d.model,payload:p});
+      updateArticleBar();
+      $('result').classList.remove('hidden');
+      $('draft-placeholder').classList.add('hidden');
+      $('ctype-label').textContent='· '+p.content_type+' · '+p.words+'字';
+    }).catch(function(e){clearInterval(tk);$('loading').classList.add('hidden');if(e.message!=='auth')showErr('生成失败：'+e.message);$('empty-state').classList.remove('hidden')})
+      .finally(function(){GENERATING=false;$('generate-btn').disabled=false});
+  };
+
+  // ---- 次按钮：仅出灵感 ----
+  $('topics-btn').onclick=function(){
+    if(GENERATING)return;
+    var p=collectPayload();
+    if(!p.topic||!p.audience||!p.style){showErr('请填写完整的自定义选项');return}
+    if(!p.engine){showErr('没有可用的生成引擎（智谱 / 魔搭）');return}
+    GENERATING=true;this.disabled=true;
+    clearOutput();$('loading').classList.remove('hidden');
+    var tk=ticker('正在酝酿 4-5 组灵感…',['正在调取三大知识库…','寻找不同切入角度…','让每组灵感各有侧重…','即将落笔，请稍候…']);
+    gen(p,'topics').then(function(d){
+      clearInterval(tk);$('loading').classList.add('hidden');
+      CURRENT_TOPICS=(d.topics&&d.topics.length)?d.topics:parseTopics(d.content);
+      SELECTED_TOPICS=[];ARTICLES=[];
+      metaLine(p,d);renderTopics();
+      $('result').classList.remove('hidden');
+      $('topics-count').textContent=CURRENT_TOPICS.length?CURRENT_TOPICS.length+' 组 · 可多选':'';
+      $('topic-actions').classList.remove('hidden');
+      $('draft-placeholder').classList.remove('hidden');
+      $('draft-placeholder').textContent='↑ 勾选上方灵感（可多选），再点「逐条生成」；每写完一篇就显示一篇';
+      $('ctype-label').textContent='· '+p.content_type+' · '+p.words+'字';
+    }).catch(function(e){clearInterval(tk);$('loading').classList.add('hidden');if(e.message!=='auth')showErr('生成灵感失败：'+e.message);$('empty-state').classList.remove('hidden')})
+      .finally(function(){GENERATING=false;$('topics-btn').disabled=false});
+  };
+
+  // ---- 逐条生成 ----
+  $('write-article-btn').onclick=function(){
+    if(GENERATING||!SELECTED_TOPICS.length)return;
+    GENERATING=true;STOP_REQUESTED=false;
+    var btn=this;btn.disabled=true;$('stop-gen').disabled=false;
+    $('error-box').classList.add('hidden');$('result').classList.remove('hidden');
+    $('empty-state').classList.add('hidden');$('draft-placeholder').classList.add('hidden');
+    $('stop-gen').classList.remove('hidden');
+    var queue=CURRENT_TOPICS.filter(function(t){return SELECTED_TOPICS.indexOf(t)>=0});
+    var chain=Promise.resolve();
+    queue.forEach(function(topic,i){
+      chain=chain.then(function(){
+        if(STOP_REQUESTED)return;
+        var idx=ARTICLES.length;
+        appendCard(idx,topic);
+        var tk=ticker('正在写第 '+(i+1)+'/'+queue.length+' 篇：'+topicShort(topic)+'…',['正在调取三大知识库…','经络与心性正在融合…','把道理化成生活的话…','即将落笔，请稍候…']);
+        var p=collectPayload();
+        return gen(p,'article').then(function(d){
+          var article=String(d.article||d.content||'').trim();
+          ARTICLES.push({topic:topic,content:article,review:d.review,model:d.model,payload:p});
+          fillCard(idx,article,d.model,d.style_score,d.style_regen,d.review);updateArticleBar();
+        }).catch(function(e){failCard(idx,e.message)}).finally(function(){clearInterval(tk)});
+      });
+    });
+    chain.finally(function(){
+      $('stop-gen').classList.add('hidden');GENERATING=false;STOP_REQUESTED=false;btn.disabled=false;
+      if(ARTICLES.length)$('draft-list').scrollIntoView({behavior:'smooth',block:'start'});
+    });
+  };
+
+  // ---- 复制/下载 ----
+  function copyText(t){
+    if(!t)return;
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t);
+    else{var ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta)}
+  }
+  function allText(){return ARTICLES.map(function(a,i){return '# 第 '+(i+1)+' 篇：'+a.topic+'\n\n'+a.content}).join('\n\n---\n\n')}
+  $('copy-draft').onclick=$('copy-all').onclick=function(){copyText(allText())};
+  $('download-btn').onclick=function(){
+    var blob=new Blob([allText()],{type:'text/markdown;charset=utf-8'}),a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);a.download='素手归原_创作成品.md';a.click();URL.revokeObjectURL(a.href);
+  };
+  $('draft-list').addEventListener('click',function(e){
+    var b=e.target.closest('[data-copy]');if(!b)return;
+    var a=ARTICLES[parseInt(b.dataset.copy)];if(a)copyText(a.content);
+    b.textContent='✓ 已复制';setTimeout(function(){b.textContent='⧉ 复制本文'},1200);
+  });
+
+  // ======== 审核面板交互 ========
+  $('draft-list').addEventListener('click',function(e){
+    // 收起/展开
+    var tg=e.target.closest('[data-rtoggle]');
+    if(tg){
+      var i=tg.dataset.rtoggle,body=$('review-body-'+i);
+      var hid=body.classList.toggle('hidden');
+      tg.textContent=hid?'展开 ▼':'收起 ▲';return;
+    }
+    // 导出提示词
+    var ex=e.target.closest('[data-export]');
+    if(ex){
+      var ta=$('export-prompt-'+ex.dataset.export);
+      copyText(ta?ta.value:'');ex.textContent='✓ 已复制';
+      setTimeout(function(){ex.textContent='⧉ 复制本次完整提示词'},1200);return;
+    }
+    // 微调：自动 / 段落 / 保留
+    var rf=e.target.closest('[data-refine]');
+    if(rf){
+      var idx=rf.dataset.refine, action=rf.dataset.action;
+      if(action==='keep'){
+        rf.textContent='✓ 已保留原版';setTimeout(function(){rf.textContent='✓ 保留原版'},1500);return;
+      }
+      if(action==='paragraph'){
+        var inst=$('refine-inst-'+idx);inst.classList.toggle('hidden');return;
+      }
+      if(action==='auto'){doRefine(idx,'auto','','');return;}
+    }
+    // 确认段落修改
+    var go=e.target.closest('[data-refine-go]');
+    if(go){
+      var gi=go.dataset.refineGo;
+      var para=$('refine-para-'+gi).value.trim();
+      var note=$('refine-note-'+gi).value.trim();
+      if(!note){alert('请填写修改要求');return;}
+      doRefine(gi,'paragraph',note,para);return;
+    }
+  });
+
+  function doRefine(idx,action,instruction,paragraph){
+    var a=ARTICLES[idx];if(!a)return;
+    var btn=$('draft-list').querySelector('[data-refine="'+idx+'"][data-action="'+action+'"]');
+    if(btn){btn.disabled=true;btn.textContent='微调中…'}
+    var payload={article:a.content,review:a.review,action:action,instruction:instruction,
+      paragraph:paragraph,engine:a.payload?a.payload.engine:$('engine').value,
+      params:{topic:a.topic,cultures:a.payload?a.payload.cultures:[],audience:a.payload?a.payload.audience:'',
+        style:a.payload?a.payload.style:'',content_type:a.payload?a.payload.content_type:'',
+        words:a.payload?a.payload.words:500,extra:''}};
+    fetch(API('/api/refine'),{method:'POST',headers:{'Content-Type':'application/json','X-Access-Key':accessKey},body:JSON.stringify(payload)})
+      .then(function(r){if(r.status===401){showAccess();throw new Error('auth')}return r.json()})
+      .then(function(d){
+        if(!d.ok)throw new Error(d.error||'微调失败');
+        var newText=String(d.article||'').trim();
+        a.content=newText;a.review=d.review;a.model=d.model;
+        $('art-'+idx+'-body').innerHTML=formatDraft(newText);
+        renderReview(idx,newText,d.review,d.model);
+        var st=$('art-'+idx+'-status');
+        if(st){st.textContent='✓ 已微调 · 复审 '+((d.review&&d.review.report&&d.review.report.style_score)||0)+'/100';}
+        $('review-'+idx).scrollIntoView({behavior:'smooth',block:'nearest'});
+      })
+      .catch(function(e){if(e.message!=='auth')alert('微调失败：'+e.message)})
+      .finally(function(){if(btn){btn.disabled=false;btn.textContent=action==='auto'?'✦ 一键自动微调':'✎ 指定段落修改'}});
+  }
+
+  // ---- 启动 ----
+  if(accessKey){
+    fetch(API('/api/verify'),{headers:{'X-Access-Key':accessKey}}).then(function(r){return r.json()}).then(function(d){
+      if(d.ok){hideAccess();initAfterAccess()}else{localStorage.removeItem(KEY);accessKey='';showAccess()}
+    }).catch(function(){showAccess()});
+  }else showAccess();
+})();
+</script>
+</body>
+</html>

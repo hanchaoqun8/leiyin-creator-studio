@@ -7,3 +7,7 @@ secrets.local.js
 android/.build/
 android/*.apk
 android/*.keystore
+python-panel/config.json
+__pycache__/
+*.pyc
+

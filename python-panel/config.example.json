@@ -1,0 +1,17 @@
+{
+  "zhipu": {
+    "api_key": "YOUR_ZHIPU_API_KEY",
+    "model": "glm-4-flash",
+    "endpoint": "https://open.bigmodel.cn/api/paas/v4/chat/completions"
+  },
+  "modelscope": {
+    "api_key": "YOUR_MODELSCOPE_TOKEN",
+    "model": "Qwen/Qwen3.8-Flash-Next",
+    "endpoint": "https://api-inference.modelscope.cn/v1/chat/completions"
+  },
+  "doubao": {
+    "api_key": "",
+    "model": "doubao-seed-1-6-flash-250715",
+    "endpoint": "https://ark.cn-beijing.volces.com/api/v3/chat/completions"
+  }
+}

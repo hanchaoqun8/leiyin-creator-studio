@@ -10,6 +10,19 @@
 - **双引擎**：魔搭（Qwen3.8-Flash-Next 首选）/ 智谱（glm-4-flash → glm-4-flashx），自动模式失败回退
 - **APK 下载**：部署后的站点右上角有「↓ 下载 APP」按钮，静态目录 `web/sushou-guiyuan.apk` 即为签名安装包（发布站点自带令牌，仓库里不含 APK 二进制）
 
+## 当前线上版本：`python-panel/`（四库范文优先版，2026-11-25 起）
+
+线上已切换为 `python-panel/` 这套 Python 单端口服务（入口 `main.py` → `server.py`），核心升级：
+
+- **四库范文优先**：19 篇用户原创范文库为最高优先级行文蓝本，每次生成强制召回 2-4 条片段；另含拍打 20 / 经络 4 / 国学 4，共 47 篇
+- **文风自检**：对照范文的短句换行、第一人称、体感词打分，偏差过大自动重写一版
+- **后置审核**：逐篇检查医疗化违规词、错别字专有名词、虚构个案、绝对化表述，输出审核报告 + 导出提示词
+- **微调接口** `/api/refine`：按审核报告自动或按指令润色指定段落
+- 访问口令仍为 `chanpai2026`（`X-Access-Key` 头）；令牌可放 `config.json`（不入库）或环境变量 `MODELSCOPE_TOKEN` / `ZHIPU_API_KEY` / `DOUBAO_API_KEY`
+- 根目录的 `server.js` + `web/` 是上一版 Node 实现，保留作参考
+
+本地启动：`cd python-panel && cp config.example.json config.json && 填入令牌 && PORT=8848 python main.py`
+
 ### 智谱调用稳定性（2026-11-24 实测诊断）
 
 智谱"老是失败"的根因是**推理模型把 `max_tokens` 全消耗在 `reasoning_content`，正文 `content` 为空**，
